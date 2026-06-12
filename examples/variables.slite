@@ -1,0 +1,6 @@
+score = 0
+score += 10
+score++
+
+name = "Maya"
+say name + " scored " + toText(score)
