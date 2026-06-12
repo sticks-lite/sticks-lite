@@ -9,7 +9,7 @@ Sticks Lite is intended for monitored educational environments and introductory 
 Install globally from npm after the package is published:
 
 ```sh
-npm install -g @brisqdev/sticks-lite
+npm install -g sticks-lite
 ```
 
 Run a Sticks Lite file:
@@ -59,7 +59,7 @@ npm run check
 ## Public API
 
 ```ts
-import { lex, parse, runSource } from "@brisqdev/sticks-lite";
+import { lex, parse, runSource } from "sticks-lite";
 ```
 
 Exports include:
@@ -89,14 +89,18 @@ npm login
 5. Publish publicly:
 
 ```sh
-npm publish --access public
+npm publish
 ```
 
 After publishing, users can install with:
 
 ```sh
-npm install -g @brisqdev/sticks-lite
+npm install -g sticks-lite
 ```
+
+This package is intentionally unscoped on npm. Publishing as
+`@brisqdev/sticks-lite` requires an npm account with permission to publish under
+the `@brisqdev` scope.
 
 ## License
 

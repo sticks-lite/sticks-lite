@@ -1,11 +1,35 @@
 {
-  "name": "@brisqdev/sticks-lite",
+  "name": "sticks-lite",
   "version": "1.0.0",
   "description": "The Sticks Lite compiler/interpreter and CLI.",
-  "type": "commonjs",
+  "keywords": [
+    "language",
+    "education",
+    "educational",
+    "interpreter",
+    "compiler",
+    "classroom",
+    "teaching"
+  ],
+  "homepage": "https://github.com/sticks-lite/sticks-lite#readme",
+  "bugs": {
+    "url": "https://github.com/sticks-lite/sticks-lite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sticks-lite/sticks-lite.git"
+  },
   "license": "MIT",
+  "author": "brisqdev",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "sticks": "./dist/cli/main.js"
+  },
+  "directories": {
+    "example": "examples",
+    "test": "tests"
   },
   "files": [
     "dist",
@@ -17,7 +41,8 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsx src/cli/main.ts",
     "test": "vitest run",
-    "check": "npm test && npm run build"
+    "check": "npm test && npm run build",
+    "prepublishOnly": "npm run check"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
