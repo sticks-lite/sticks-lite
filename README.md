@@ -6,7 +6,7 @@ Sticks Lite is intended for monitored educational environments and introductory 
 
 ## Install
 
-Install globally from npm after the package is published:
+Install globally from npm:
 
 ```sh
 npm install -g sticks-lite
@@ -69,43 +69,6 @@ Exports include:
 - `runSource(source: string, io?)`
 - `RuntimeIO`
 - `SticksLiteError`
-
-## Distribution
-
-1. Create or sign in to an npm account.
-2. Confirm the package name in `package.json`.
-3. Make sure publishing authentication is ready. npm requires either account
-   two-factor authentication or a granular access token with bypass 2FA enabled.
-4. Build and test:
-
-```sh
-npm run check
-```
-
-5. Log in:
-
-```sh
-npm login
-npm whoami
-```
-
-6. Publish publicly. If your account uses one-time-password 2FA, include the
-   current code from your authenticator app:
-
-```sh
-npm publish
-npm publish --otp=123456
-```
-
-After publishing, users can install with:
-
-```sh
-npm install -g sticks-lite
-```
-
-This package is intentionally unscoped on npm. Publishing as
-`@brisqdev/sticks-lite` requires an npm account with permission to publish under
-the `@brisqdev` scope.
 
 ## License
 
