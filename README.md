@@ -74,22 +74,27 @@ Exports include:
 
 1. Create or sign in to an npm account.
 2. Confirm the package name in `package.json`.
-3. Build and test:
+3. Make sure publishing authentication is ready. npm requires either account
+   two-factor authentication or a granular access token with bypass 2FA enabled.
+4. Build and test:
 
 ```sh
 npm run check
 ```
 
-4. Log in:
+5. Log in:
 
 ```sh
 npm login
+npm whoami
 ```
 
-5. Publish publicly:
+6. Publish publicly. If your account uses one-time-password 2FA, include the
+   current code from your authenticator app:
 
 ```sh
 npm publish
+npm publish --otp=123456
 ```
 
 After publishing, users can install with:
