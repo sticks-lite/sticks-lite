@@ -16,11 +16,6 @@ Run a Sticks Lite file:
 
 ```sh
 sticks main.slite
-```
-
-Run a directory containing `main.slite`:
-
-```sh
 sticks path/to/project
 ```
 
