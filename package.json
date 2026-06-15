@@ -25,7 +25,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "sticks": "./dist/cli/main.js"
+    "sticks": "dist/cli/main.js"
   },
   "directories": {
     "example": "examples",
