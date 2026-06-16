@@ -1,7 +1,13 @@
-node_modules/
-dist/
-coverage/
-*.log
-.DS_Store
+# Exclude raw development files
+src/
+tests/
+tsconfig.json
+tsconfig.build.json
+vitest.config.ts
+
+# Exclude local configurations & logs
+.github/
+.vscode/
 .env
-*.tsbuildinfo
+.gitignore
+*.log
