@@ -3,8 +3,6 @@
 [![npm version](https://img.shields.io/npm/v/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
 [![npm downloads](https://img.shields.io/npm/dm/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
 [![Sticks Lite](https://img.shields.io/badge/Sticks%20Lite-v1.0.2-5cad4a.svg)](https://github.com/sticks-lite/sticks-lite)
-[![GitHub stars](https://img.shields.io/github/stars/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/stars)
-[![GitHub forks](https://img.shields.io/github/forks/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/forks)
 [![CLI](https://img.shields.io/badge/CLI-sticks-111111.svg)](#command-line)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
