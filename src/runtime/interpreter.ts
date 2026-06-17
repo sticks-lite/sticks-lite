@@ -57,10 +57,10 @@ export class Interpreter {
     for (const statement of statements) {
       if (statement.kind !== "FunctionStatement") continue;
       if (PROTECTED_NAMES.has(statement.name)) {
-        throw new SticksLiteError("FunctionError", `\`${statement.name}\` is a protected name.`, statement.line, statement.column);
+        throw new SticksLiteError("FunctionError", `\`${statement.name}\` is a protected name.`, statement.line, statement.column, "Choose a different function name.");
       }
       if (this.functions.has(statement.name)) {
-        throw new SticksLiteError("FunctionError", `Function \`${statement.name}\` is already defined.`, statement.line, statement.column);
+        throw new SticksLiteError("FunctionError", `Function \`${statement.name}\` is already defined.`, statement.line, statement.column, "Rename one function or keep a single definition.");
       }
       this.functions.set(statement.name, { kind: "function", declaration: statement });
     }
@@ -80,14 +80,14 @@ export class Interpreter {
       case "IncrementStatement": {
         const current = this.lookupVariable(statement.name, env, statement.line, statement.column);
         if (current.kind !== "number") {
-          throw new SticksLiteError("TypeError", `\`${statement.name}\` must be a number to use \`${statement.operator}\`.`, statement.line, statement.column);
+          throw new SticksLiteError("TypeError", `\`${statement.name}\` must be a number to use \`${statement.operator}\`.`, statement.line, statement.column, "Use `toNumber(...)` first if the value came from `ask`.");
         }
         this.assignVariable(statement.name, numberValue(current.value + (statement.operator === "++" ? 1 : -1)), env, statement.line, statement.column);
         return;
       }
       case "ConstantStatement": {
         if (!context.topLevel) {
-          throw new SticksLiteError("ConstantError", "Constants can only be defined at the top level.", statement.line, statement.column);
+          throw new SticksLiteError("ConstantError", "Constants can only be defined at the top level.", statement.line, statement.column, "Move `DEFINE` outside of `if`, loop, function, and `attempt` blocks.");
         }
         this.defineConstant(statement.name, await this.evaluate(statement.value, env), statement.line, statement.column);
         return;
@@ -107,10 +107,10 @@ export class Interpreter {
       case "RepeatStatement": {
         const count = await this.evaluate(statement.count, env);
         if (count.kind !== "number" || !Number.isInteger(count.value)) {
-          throw new SticksLiteError("ValueError", "`repeat` count must be a whole number.", statement.line, statement.column);
+          throw new SticksLiteError("ValueError", "`repeat` count must be a whole number.", statement.line, statement.column, "Use counts like `repeat 3 times:`.");
         }
         if (count.value < 0) {
-          throw new SticksLiteError("ValueError", "`repeat` count cannot be negative.", statement.line, statement.column);
+          throw new SticksLiteError("ValueError", "`repeat` count cannot be negative.", statement.line, statement.column, "Use zero or a positive whole number.");
         }
         for (let index = 0; index < count.value; index += 1) {
           try {
@@ -142,7 +142,7 @@ export class Interpreter {
             `\`foreach\` can iterate over lists and tuples, not ${typeName(collection)}.`,
             statement.line,
             statement.column,
-            "Dictionary iteration is not supported in Sticks Lite v1.0.7. Use a list or tuple instead."
+            "Dictionary iteration is not supported in Sticks Lite v1.0.8. Use a list or tuple instead."
           );
         }
         for (const item of collection.items) {
@@ -161,17 +161,17 @@ export class Interpreter {
         return;
       case "ReturnStatement":
         if (!context.inFunction) {
-          throw new SticksLiteError("RuntimeError", "`return` can only be used inside a function.", statement.line, statement.column);
+          throw new SticksLiteError("RuntimeError", "`return` can only be used inside a function.", statement.line, statement.column, "Put `return` inside a `new functionName:` block.");
         }
         throw new ReturnSignal(statement.value ? await this.evaluate(statement.value, env) : NULL_VALUE);
       case "BreakStatement":
         if (context.loopDepth === 0) {
-          throw new SticksLiteError("RuntimeError", "`break` can only be used inside a loop.", statement.line, statement.column);
+          throw new SticksLiteError("RuntimeError", "`break` can only be used inside a loop.", statement.line, statement.column, "Use `break` inside `repeat`, `loopif`, or `foreach`.");
         }
         throw new BreakSignal();
       case "ContinueStatement":
         if (context.loopDepth === 0) {
-          throw new SticksLiteError("RuntimeError", "`continue` can only be used inside a loop.", statement.line, statement.column);
+          throw new SticksLiteError("RuntimeError", "`continue` can only be used inside a loop.", statement.line, statement.column, "Use `continue` inside `repeat`, `loopif`, or `foreach`.");
         }
         throw new ContinueSignal();
       case "AttemptStatement":
@@ -245,7 +245,7 @@ export class Interpreter {
         const right = await this.evaluate(expression.right, env);
         if (expression.operator === "-") {
           if (right.kind !== "number") {
-            throw new SticksLiteError("TypeError", "Unary `-` works only on numbers.", expression.line, expression.column);
+            throw new SticksLiteError("TypeError", "Unary `-` works only on numbers.", expression.line, expression.column, "Convert text input with `toNumber(...)` before negating it.");
           }
           return numberValue(-right.value);
         }
@@ -292,7 +292,7 @@ export class Interpreter {
       case "AskExpression": {
         const prompt = await this.evaluate(expression.prompt, env);
         if (prompt.kind !== "text") {
-          throw new SticksLiteError("TypeError", "`ask` prompt must be text.", expression.line, expression.column);
+          throw new SticksLiteError("TypeError", "`ask` prompt must be text.", expression.line, expression.column, "Write prompts in quotes, such as `ask \"Name?\"`.");
         }
         return textValue(await this.io.readInput(prompt.value));
       }
@@ -319,20 +319,20 @@ export class Interpreter {
 
   private assignVariable(name: string, value: SticksValue, env: Environment, line: number, column: number): void {
     if (this.constants.has(name)) {
-      throw new SticksLiteError("ConstantError", `\`${name}\` is a constant and cannot be changed.`, line, column);
+      throw new SticksLiteError("ConstantError", `\`${name}\` is a constant and cannot be changed.`, line, column, "Create a new variable instead of assigning to a `DEFINE` name.");
     }
     if (BUILTIN_NAMES.has(name) || this.functions.has(name) || PROTECTED_NAMES.has(name)) {
-      throw new SticksLiteError("NameError", `\`${name}\` is a protected name and cannot be overwritten.`, line, column);
+      throw new SticksLiteError("NameError", `\`${name}\` is a protected name and cannot be overwritten.`, line, column, "Choose a different variable name.");
     }
     env.values.set(name, value);
   }
 
   private defineConstant(name: string, value: SticksValue, line: number, column: number): void {
     if (this.globals.values.has(name) || this.constants.has(name)) {
-      throw new SticksLiteError("ConstantError", `Constant \`${name}\` is already defined.`, line, column);
+      throw new SticksLiteError("ConstantError", `Constant \`${name}\` is already defined.`, line, column, "Use a different constant name or keep the first definition.");
     }
     if (this.functions.has(name) || PROTECTED_NAMES.has(name)) {
-      throw new SticksLiteError("ConstantError", `\`${name}\` is a protected name and cannot be used for a constant.`, line, column);
+      throw new SticksLiteError("ConstantError", `\`${name}\` is a protected name and cannot be used for a constant.`, line, column, "Choose a classroom-friendly name that is not a built-in or error name.");
     }
     this.globals.values.set(name, value);
     this.constants.add(name);
@@ -343,7 +343,7 @@ export class Interpreter {
       return callee.call(args, line, column);
     }
     if (callee.kind !== "function") {
-      throw new SticksLiteError("FunctionError", "Only functions can be called.", line, column);
+      throw new SticksLiteError("FunctionError", `Only functions can be called, not ${typeName(callee)}.`, line, column, "Remove `(...)` or call a function created with `new`.");
     }
     const declaration: FunctionStatement = callee.declaration;
     if (args.length !== declaration.params.length) {
@@ -377,7 +377,7 @@ export class Interpreter {
 
     if (["<", ">", "<=", ">="].includes(operator)) {
       if (left.kind !== "number" || right.kind !== "number") {
-        throw new SticksLiteError("TypeError", `\`${operator}\` compares numbers.`, line, column);
+        throw new SticksLiteError("TypeError", `\`${operator}\` compares numbers.`, line, column, "Convert text input with `toNumber(...)` before comparing.");
       }
       if (operator === "<") return booleanValue(left.value < right.value);
       if (operator === ">") return booleanValue(left.value > right.value);
@@ -390,7 +390,13 @@ export class Interpreter {
     }
 
     if (left.kind !== "number" || right.kind !== "number") {
-      throw new SticksLiteError("TypeError", `\`${operator}\` works on numbers${operator === "+" ? " or two text values" : ""}.`, line, column);
+      throw new SticksLiteError(
+        "TypeError",
+        `\`${operator}\` works on numbers${operator === "+" ? " or two text values" : ""}.`,
+        line,
+        column,
+        operator === "+" ? "Use `toText(...)` to build text, or convert input with `toNumber(...)` for math." : "Use numeric values on both sides."
+      );
     }
     switch (operator) {
       case "+":
@@ -400,16 +406,16 @@ export class Interpreter {
       case "*":
         return numberValue(left.value * right.value);
       case "/":
-        if (right.value === 0) throw new SticksLiteError("MathError", "Division by zero is not allowed.", line, column);
+        if (right.value === 0) throw new SticksLiteError("MathError", "Division by zero is not allowed.", line, column, "Check the divisor before dividing.");
         return numberValue(left.value / right.value);
       case "%":
-        if (right.value === 0) throw new SticksLiteError("MathError", "Modulo by zero is not allowed.", line, column);
+        if (right.value === 0) throw new SticksLiteError("MathError", "Modulo by zero is not allowed.", line, column, "Check the right side of `%` before using it.");
         return numberValue(left.value % right.value);
       case "div":
-        if (right.value === 0) throw new SticksLiteError("MathError", "Integer division by zero is not allowed.", line, column);
+        if (right.value === 0) throw new SticksLiteError("MathError", "Integer division by zero is not allowed.", line, column, "Check the divisor before using `div`.");
         return numberValue(Math.trunc(left.value / right.value));
       default:
-        throw new SticksLiteError("RuntimeError", `Unsupported operator \`${operator}\`.`, line, column);
+        throw new SticksLiteError("RuntimeError", `Unsupported operator \`${operator}\`.`, line, column, "This usually means the parser and interpreter disagree.");
     }
   }
 

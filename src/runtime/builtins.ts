@@ -47,7 +47,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     const min = expectNumber("random", args[0], 1, line, column);
     const max = expectNumber("random", args[1], 2, line, column);
     if (min > max) {
-      throw new SticksLiteError("ValueError", "`random` needs the minimum to be less than or equal to the maximum.", line, column);
+      throw new SticksLiteError("ValueError", "`random` needs the minimum to be less than or equal to the maximum.", line, column, "Swap the two arguments or lower the first number.");
     }
     if (Number.isInteger(min) && Number.isInteger(max)) {
       return numberValue(Math.floor(Math.random() * (max - min + 1)) + min);
@@ -61,7 +61,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     if (value.kind === "text") return numberValue(value.value.length);
     if (value.kind === "list" || value.kind === "tuple") return numberValue(value.items.length);
     if (value.kind === "dictionary") return numberValue(value.entries.size);
-    throw new SticksLiteError("TypeError", `\`length\` works on text, lists, tuples, and dictionaries, not ${typeName(value)}.`, line, column);
+    throw new SticksLiteError("TypeError", `\`length\` works on text, lists, tuples, and dictionaries, not ${typeName(value)}.`, line, column, "Pass a collection or text value.");
   },
 
   toNumber(args, line, column) {
@@ -130,7 +130,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     const list = expectList("insert", args[0], 1, line, column);
     const index = expectWholeNumber("insert", args[1], 2, line, column);
     if (index < 0 || index > list.items.length) {
-      throw new SticksLiteError("IndexError", `Index ${index} is outside this list.`, line, column);
+      throw new SticksLiteError("IndexError", `Index ${index} is outside this list.`, line, column, `Use an index from 0 through ${list.items.length}.`);
     }
     list.items.splice(index, 0, args[2]);
     return NULL_VALUE;
@@ -141,7 +141,8 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     const list = expectList("remove", args[0], 1, line, column);
     const index = expectWholeNumber("remove", args[1], 2, line, column);
     if (index < 0 || index >= list.items.length) {
-      throw new SticksLiteError("IndexError", `Index ${index} is outside this list.`, line, column);
+      const hint = list.items.length === 0 ? "This list is empty." : `Use an index from 0 through ${list.items.length - 1}.`;
+      throw new SticksLiteError("IndexError", `Index ${index} is outside this list.`, line, column, hint);
     }
     list.items.splice(index, 1);
     return NULL_VALUE;

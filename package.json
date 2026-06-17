@@ -1,6 +1,6 @@
 {
   "name": "sticks-lite",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "The Sticks Lite compiler/interpreter and CLI.",
   "keywords": [
     "language",
@@ -44,7 +44,8 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "npm run build --silent && node dist/cli/main.js",
     "test": "vitest run",
-    "check": "npm test && npm run build",
+    "test:examples": "node scripts/run-examples.mjs",
+    "check": "npm test && npm run build && npm run test:examples",
     "audit:prod": "npm audit --omit=dev",
     "prepublishOnly": "npm run check"
   },

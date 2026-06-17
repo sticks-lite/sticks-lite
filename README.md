@@ -6,7 +6,7 @@
 [![Runtime dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](#security-model)
 [![GitHub forks](https://img.shields.io/github/forks/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/forks)
 [![CLI](https://img.shields.io/badge/CLI-sticks-111111.svg)](#command-line)
-[![Tests](https://img.shields.io/badge/tests-36%20passing-brightgreen.svg)](#development)
+[![Tests](https://img.shields.io/badge/tests-vitest%20%2B%20examples-brightgreen.svg)](#development)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Sticks Lite is a small educational programming language for monitored
@@ -160,6 +160,13 @@ Test:
 
 ```sh
 npm test
+```
+
+Run every executable example:
+
+```sh
+npm run build
+npm run test:examples
 ```
 
 Run all checks:
