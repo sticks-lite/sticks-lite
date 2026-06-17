@@ -9,7 +9,10 @@
 [![Tests](https://img.shields.io/badge/tests-36%20passing-brightgreen.svg)](#development)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Sticks Lite is a small educational programming language for monitored classroom environments. It is designed to teach introductory computer-science concepts with readable syntax, indentation-based blocks, friendly errors, and a compact TypeScript interpreter.
+Sticks Lite is a small educational programming language for monitored
+classroom environments. It is designed to teach introductory computer-science
+concepts with readable syntax, indentation-based blocks, friendly errors, and a
+compact TypeScript interpreter.
 
 This repository contains the language core and the `sticks` command-line tool.
 
@@ -78,7 +81,7 @@ say toText(double(MAX_SCORE))
 - Boolean-only conditions with `True` and `False`.
 - `if`, `orif`, `otherwise`, `repeat`, `loopif`, and `foreach`.
 - `new` function definitions with call-before-definition support.
-- Lists, tuples, dictionaries, indexing, and assignment to mutable collections.
+- Lists, tuples, dictionaries, indexing, and mutable collection assignment.
 - `attempt` and `when` for beginner-friendly error handling.
 - Built-ins for conversion, type checks, collection operations, and math.
 - Friendly `SticksLiteError` messages with line, column, and optional hints.
@@ -129,7 +132,9 @@ interpreter
 runtime I/O
 ```
 
-Node.js file access, terminal input, and terminal output live in the CLI wrapper. The interpreter itself communicates through `RuntimeIO`, which keeps the core usable from the CLI, browser IDE, tests, and future classroom tools.
+Node.js file access, terminal input, and terminal output live in the CLI
+wrapper. The interpreter itself communicates through `RuntimeIO`, which keeps
+the core usable from the CLI, browser IDE, tests, and future classroom tools.
 
 ## Development
 
@@ -165,7 +170,8 @@ npm run check
 
 ## Responsible Use
 
-Sticks Lite is intended for monitored educational environments and introductory computer-science teaching.
+Sticks Lite is intended for monitored educational environments and introductory
+computer-science teaching.
 
 It is not designed or represented as:
 
@@ -173,9 +179,12 @@ It is not designed or represented as:
 - a security sandbox,
 - a permissions boundary,
 - a package ecosystem for untrusted code,
-- a high-risk, safety-critical, medical, legal, financial, or infrastructure tool.
+- a high-risk, safety-critical, medical, legal, financial, or infrastructure
+  tool.
 
-Teachers and operators are responsible for supervising use, reviewing programs before execution, and deciding whether Sticks Lite is appropriate for their environment.
+Teachers and operators are responsible for supervising use, reviewing programs
+before execution, and deciding whether Sticks Lite is appropriate for their
+environment.
 
 ## Security Model
 
@@ -183,13 +192,21 @@ Sticks Lite keeps the interpreter small and explicit, but it is not a sandbox.
 
 - The language core has no direct file-system or network APIs.
 - The CLI wrapper reads source files and handles terminal I/O.
-- Built-in names, error names, constants, and functions are protected from accidental overwrite.
-- Friendly errors are intended for learning and debugging, not security enforcement.
+- Built-in names, error names, constants, and functions are protected from
+  accidental overwrite.
+- Friendly errors are intended for learning and debugging, not security
+  enforcement.
 - Do not run untrusted programs without external controls and supervision.
 
 ## Warranty And Liability
 
-Sticks Lite is provided under the MIT License and is distributed as-is, without warranty of any kind. Kabir Sekhon, the Sticks Lite Project Authors, contributors, copyright holders, and maintainers are not liable for claims, damages, losses, misuse, classroom deployment issues, production use, data loss, security issues, or other liability arising from the software, documentation, examples, language design, interpreter, compiler, browser IDE, editor extension, or command-line tools.
+Sticks Lite is provided under the MIT License and is distributed as-is, without
+warranty of any kind. Kabir Sekhon, the Sticks Lite Project Authors,
+contributors, copyright holders, and maintainers are not liable for claims,
+damages, losses, misuse, classroom deployment issues, production use, data loss,
+security issues, or other liability arising from the software, documentation,
+examples, language design, interpreter, compiler, browser IDE, editor extension,
+or command-line tools.
 
 See [LICENSE](LICENSE) for the full license and liability notice.
 
