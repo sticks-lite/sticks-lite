@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { lex, parse, runSource } from "../src";
+import { SticksLiteError } from "../src/runtime/errors";
 
 async function errorFor(source: string) {
   const result = await runSource(source);
@@ -9,7 +10,9 @@ async function errorFor(source: string) {
 
 describe("friendly errors", () => {
   it("reports unknown variables", async () => {
-    await expect(errorFor("say toText(score)\n")).resolves.toContain("NameError");
+    const error = await errorFor("say toText(score)\n");
+    expect(error).toContain("NameError");
+    expect(error).toContain("spelling and capitalization");
   });
 
   it("reports bad indentation", () => {
@@ -17,17 +20,26 @@ describe("friendly errors", () => {
       lex("if True:\n    say 'ok'\n  say 'bad'\n");
     } catch (error) {
       expect((error as Error).name).toBe("IndentationError");
+      expect((error as Error).message).toContain("indentation level");
       return;
     }
     throw new Error("Expected IndentationError");
   });
 
   it("reports missing colons", () => {
-    expect(() => parse("if True\n    say 'bad'\n")).toThrow(/:/);
+    expectHint(() => parse("if True\n    say 'bad'\n"), /Put `:` at the end/);
   });
 
   it("reports invalid otherwise", () => {
-    expect(() => parse("otherwise:\n    say 'bad'\n")).toThrow(/otherwise/);
+    expectHint(() => parse("otherwise:\n    say 'bad'\n"), /final block in an `if` chain/);
+  });
+
+  it("reports invalid standalone orif", () => {
+    expectHint(() => parse("orif True:\n    say 'bad'\n"), /Start with `if`/);
+  });
+
+  it("reports unfinished strings", () => {
+    expectHint(() => lex("say \"hello\n"), /matching quote/);
   });
 
   it("reports invalid repeat counts", async () => {
@@ -45,20 +57,57 @@ describe("friendly errors", () => {
   });
 
   it("reports wrong argument counts", async () => {
-    await expect(errorFor("say toText()\n")).resolves.toContain("ArgumentError");
+    const builtinError = await errorFor("say toText()\n");
+    expect(builtinError).toContain("ArgumentError");
+    expect(builtinError).toContain("pass exactly 1");
+
+    const functionError = await errorFor("new greet(name):\n    say name\ngreet()\n");
+    expect(functionError).toContain("ArgumentError");
+    expect(functionError).toContain("greet(name)");
   });
 
   it("reports invalid indexes and missing dictionary keys", async () => {
-    await expect(errorFor("items = [1]\nsay toText(items[2])\n")).resolves.toContain("IndexError");
-    await expect(errorFor("person = {\"name\": \"Maya\"}\nsay person[\"age\"]\n")).resolves.toContain("KeyError");
+    const rangeError = await errorFor("items = [1]\nsay toText(items[2])\n");
+    expect(rangeError).toContain("IndexError");
+    expect(rangeError).toContain("Valid indexes");
+
+    const typeError = await errorFor("items = [1]\nsay toText(items[\"zero\"])\n");
+    expect(typeError).toContain("whole numbers, not text");
+
+    const keyError = await errorFor("person = {\"name\": \"Maya\"}\nsay person[\"age\"]\n");
+    expect(keyError).toContain("KeyError");
+    expect(keyError).toContain("Check the key spelling");
   });
 
   it("reports tuple mutation", async () => {
-    await expect(errorFor("point = (1, 2)\npoint[0] = 9\n")).resolves.toContain("Tuples cannot be changed");
+    const error = await errorFor("point = (1, 2)\npoint[0] = 9\n");
+    expect(error).toContain("Tuples cannot be changed");
+    expect(error).toContain("Use a list");
   });
 
   it("reports division by zero and invalid toNumber", async () => {
     await expect(errorFor("say toText(5 / 0)\n")).resolves.toContain("MathError");
-    await expect(errorFor("say toText(toNumber(\"abc\"))\n")).resolves.toContain("ValueError");
+    await expect(errorFor("say toText(toNumber(\"abc\"))\n")).resolves.toContain("Use text like");
+    await expect(errorFor("say toText(toNumber(True))\n")).resolves.toContain("not boolean");
+  });
+
+  it("reports bad collection operations", async () => {
+    const foreachError = await errorFor("person = {\"name\": \"Maya\"}\nforeach key in person:\n    say key\n");
+    expect(foreachError).toContain("not dictionary");
+    expect(foreachError).toContain("v1.0.7");
+
+    const pushError = await errorFor("items = (1, 2)\npush(items, 3)\n");
+    expect(pushError).toContain("must be a list, not tuple");
   });
 });
+
+function expectHint(action: () => unknown, hint: RegExp) {
+  try {
+    action();
+  } catch (error) {
+    expect(error).toBeInstanceOf(SticksLiteError);
+    expect((error as SticksLiteError).hint).toMatch(hint);
+    return;
+  }
+  throw new Error("Expected SticksLiteError");
+}

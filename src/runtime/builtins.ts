@@ -61,7 +61,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     if (value.kind === "text") return numberValue(value.value.length);
     if (value.kind === "list" || value.kind === "tuple") return numberValue(value.items.length);
     if (value.kind === "dictionary") return numberValue(value.entries.size);
-    throw new SticksLiteError("TypeError", "`length` works on text, lists, tuples, and dictionaries.", line, column);
+    throw new SticksLiteError("TypeError", `\`length\` works on text, lists, tuples, and dictionaries, not ${typeName(value)}.`, line, column);
   },
 
   toNumber(args, line, column) {
@@ -69,7 +69,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     const value = args[0];
     if (value.kind === "number") return value;
     if (value.kind !== "text") {
-      throw new SticksLiteError("TypeError", "`toNumber` converts text into a number.", line, column);
+      throw new SticksLiteError("TypeError", `\`toNumber\` converts text into a number, not ${typeName(value)}.`, line, column, "Pass text like `\"42\"`, or use `toText` first if you need text output.");
     }
     const converted = Number(value.value.trim());
     if (!Number.isFinite(converted) || value.value.trim() === "") {
@@ -170,13 +170,19 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
 
 function expectCount(name: string, args: SticksValue[], count: number, line: number, column: number): void {
   if (args.length !== count) {
-    throw new SticksLiteError("ArgumentError", `\`${name}\` expects ${count} argument${count === 1 ? "" : "s"}, but got ${args.length}.`, line, column);
+    throw new SticksLiteError(
+      "ArgumentError",
+      `\`${name}\` expects ${count} argument${count === 1 ? "" : "s"}, but got ${args.length}.`,
+      line,
+      column,
+      `Check the values inside \`${name}(...)\` and pass exactly ${count}.`
+    );
   }
 }
 
 function expectNumber(name: string, value: SticksValue, position: number, line: number, column: number): number {
   if (value.kind !== "number") {
-    throw new SticksLiteError("TypeError", `Argument ${position} to \`${name}\` must be a number.`, line, column);
+    throw new SticksLiteError("TypeError", `Argument ${position} to \`${name}\` must be a number, not ${typeName(value)}.`, line, column, "Convert text input with `toNumber(...)` before using numeric operations.");
   }
   return value.value;
 }
@@ -184,14 +190,20 @@ function expectNumber(name: string, value: SticksValue, position: number, line: 
 function expectWholeNumber(name: string, value: SticksValue, position: number, line: number, column: number): number {
   const number = expectNumber(name, value, position, line, column);
   if (!Number.isInteger(number)) {
-    throw new SticksLiteError("ValueError", `Argument ${position} to \`${name}\` must be a whole number.`, line, column);
+    throw new SticksLiteError("ValueError", `Argument ${position} to \`${name}\` must be a whole number.`, line, column, "Use values like `0`, `1`, or `2`, not decimals.");
   }
   return number;
 }
 
 function expectList(name: string, value: SticksValue, position: number, line: number, column: number): Extract<SticksValue, { kind: "list" }> {
   if (value.kind !== "list") {
-    throw new SticksLiteError("TypeError", `Argument ${position} to \`${name}\` must be a list.`, line, column);
+    throw new SticksLiteError("TypeError", `Argument ${position} to \`${name}\` must be a list, not ${typeName(value)}.`, line, column, "List operations use square-bracket lists such as `[1, 2, 3]`.");
   }
   return value;
+}
+
+function typeName(value: SticksValue): string {
+  if (value.kind === "builtin") return "built-in function";
+  if (value.kind === "function") return "function";
+  return value.kind;
 }

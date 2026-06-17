@@ -137,7 +137,13 @@ export class Interpreter {
       case "ForeachStatement": {
         const collection = await this.evaluate(statement.collection, env);
         if (collection.kind !== "list" && collection.kind !== "tuple") {
-          throw new SticksLiteError("TypeError", "`foreach` can iterate over lists and tuples.", statement.line, statement.column);
+          throw new SticksLiteError(
+            "TypeError",
+            `\`foreach\` can iterate over lists and tuples, not ${typeName(collection)}.`,
+            statement.line,
+            statement.column,
+            "Dictionary iteration is not supported in Sticks Lite v1.0.7. Use a list or tuple instead."
+          );
         }
         for (const item of collection.items) {
           this.assignVariable(statement.itemName, item, env, statement.line, statement.column);
@@ -203,21 +209,27 @@ export class Interpreter {
     const object = await this.evaluate(target.object, env);
     const index = await this.evaluate(target.index, env);
     if (object.kind === "tuple") {
-      throw new SticksLiteError("TypeError", "Tuples cannot be changed after creation.", target.line, target.column);
+      throw new SticksLiteError("TypeError", "Tuples cannot be changed after creation.", target.line, target.column, "Use a list `[...]` when you need to update items.");
     }
     if (object.kind === "list") {
-      const listIndex = this.requireIndex(index, object.items.length, target.line, target.column);
+      const listIndex = this.requireIndex(index, object.items.length, target.line, target.column, "list");
       object.items[listIndex] = value;
       return;
     }
     if (object.kind === "dictionary") {
       if (index.kind !== "text") {
-        throw new SticksLiteError("TypeError", "Dictionary keys must be text.", target.line, target.column);
+        throw new SticksLiteError("TypeError", `Dictionary keys must be text, not ${typeName(index)}.`, target.line, target.column, "Use a quoted key such as `person[\"name\"]`.");
       }
       object.entries.set(index.value, value);
       return;
     }
-    throw new SticksLiteError("TypeError", "Only lists and dictionaries can be assigned by index.", target.line, target.column);
+    throw new SticksLiteError(
+      "TypeError",
+      `Only lists and dictionaries can be assigned by index, not ${typeName(object)}.`,
+      target.line,
+      target.column,
+      "Use a list for numbered updates or a dictionary for text-keyed updates."
+    );
   }
 
   private async evaluate(expression: Expression, env: Environment): Promise<SticksValue> {
@@ -296,7 +308,13 @@ export class Interpreter {
     if (env.parent?.values.has(name)) return env.parent.values.get(name)!;
     if (this.functions.has(name)) return this.functions.get(name)!;
     if (this.builtins.has(name)) return this.builtins.get(name)!;
-    throw new SticksLiteError("NameError", `\`${name}\` does not exist yet.`, line, column, `Create it first with \`${name} = ...\`.`);
+    throw new SticksLiteError(
+      "NameError",
+      `\`${name}\` does not exist yet.`,
+      line,
+      column,
+      `Create it first with \`${name} = ...\`, or check the spelling and capitalization.`
+    );
   }
 
   private assignVariable(name: string, value: SticksValue, env: Environment, line: number, column: number): void {
@@ -329,11 +347,13 @@ export class Interpreter {
     }
     const declaration: FunctionStatement = callee.declaration;
     if (args.length !== declaration.params.length) {
+      const expected = declaration.params.length === 0 ? "" : declaration.params.join(", ");
       throw new SticksLiteError(
         "ArgumentError",
         `\`${declaration.name}\` expects ${declaration.params.length} argument${declaration.params.length === 1 ? "" : "s"}, but got ${args.length}.`,
         line,
-        column
+        column,
+        `Call it as \`${declaration.name}(${expected})\`.`
       );
     }
     const local = new Environment(this.globals, true);
@@ -395,31 +415,38 @@ export class Interpreter {
 
   private indexValue(object: SticksValue, index: SticksValue, line: number, column: number): SticksValue {
     if (object.kind === "list" || object.kind === "tuple") {
-      return object.items[this.requireIndex(index, object.items.length, line, column)];
+      return object.items[this.requireIndex(index, object.items.length, line, column, object.kind)];
     }
     if (object.kind === "dictionary") {
       if (index.kind !== "text") {
-        throw new SticksLiteError("TypeError", "Dictionary keys must be text.", line, column);
+        throw new SticksLiteError("TypeError", `Dictionary keys must be text, not ${typeName(index)}.`, line, column, "Use a quoted key such as `person[\"name\"]`.");
       }
       const value = object.entries.get(index.value);
       if (value === undefined) {
-        throw new SticksLiteError("KeyError", `Dictionary key \`${index.value}\` does not exist.`, line, column);
+        throw new SticksLiteError("KeyError", `Dictionary key \`${index.value}\` does not exist.`, line, column, "Check the key spelling, or assign that key before reading it.");
       }
       return value;
     }
     if (object.kind === "text") {
-      const textIndex = this.requireIndex(index, object.value.length, line, column);
+      const textIndex = this.requireIndex(index, object.value.length, line, column, "text");
       return textValue(object.value[textIndex]);
     }
-    throw new SticksLiteError("TypeError", "Only text, lists, tuples, and dictionaries support indexing.", line, column);
+    throw new SticksLiteError(
+      "TypeError",
+      `Only text, lists, tuples, and dictionaries support indexing, not ${typeName(object)}.`,
+      line,
+      column,
+      "Use `value[index]` only on collection values."
+    );
   }
 
-  private requireIndex(value: SticksValue, length: number, line: number, column: number): number {
+  private requireIndex(value: SticksValue, length: number, line: number, column: number, collectionKind: "list" | "tuple" | "text"): number {
     if (value.kind !== "number" || !Number.isInteger(value.value)) {
-      throw new SticksLiteError("IndexError", "Indexes must be whole numbers.", line, column);
+      throw new SticksLiteError("IndexError", `Indexes must be whole numbers, not ${typeName(value)}.`, line, column, "Use indexes like `0`, `1`, or `2`.");
     }
     if (value.value < 0 || value.value >= length) {
-      throw new SticksLiteError("IndexError", `Index ${value.value} is outside the valid range.`, line, column);
+      const range = length === 0 ? `This ${collectionKind} is empty.` : `Valid indexes for this ${collectionKind} are 0 through ${length - 1}.`;
+      throw new SticksLiteError("IndexError", `Index ${value.value} is outside the valid range.`, line, column, range);
     }
     return value.value;
   }
@@ -430,6 +457,12 @@ export class Interpreter {
     }
     return value.value;
   }
+}
+
+function typeName(value: SticksValue): string {
+  if (value.kind === "builtin") return "built-in function";
+  if (value.kind === "function") return "function";
+  return value.kind;
 }
 
 export async function runSource(source: string, io?: RuntimeIO): Promise<RunResult> {

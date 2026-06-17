@@ -1,22 +1,15 @@
 #!/usr/bin/env node
-import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { runSource } from "../index";
+import { CliInputError, readProgram } from "./files";
 
-const target = process.argv[2] ?? "main.slite";
-const resolved = path.resolve(process.cwd(), target);
+export async function main(argv = process.argv.slice(2), cwd = process.cwd()) {
+  const target = argv[0] ?? "main.slite";
+  const resolved = path.resolve(cwd, target);
+  const rl = readline.createInterface({ input, output });
 
-async function readProgram(fileOrDirectory: string): Promise<string> {
-  const info = await stat(fileOrDirectory);
-  const filePath = info.isDirectory() ? path.join(fileOrDirectory, "main.slite") : fileOrDirectory;
-  return readFile(filePath, "utf8");
-}
-
-const rl = readline.createInterface({ input, output });
-
-async function main() {
   try {
     const source = await readProgram(resolved);
     const result = await runSource(source, {
@@ -32,11 +25,13 @@ async function main() {
       process.exitCode = 1;
     }
   } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
+    console.error(error instanceof CliInputError ? error.format() : error instanceof Error ? error.message : String(error));
     process.exitCode = 1;
   } finally {
     rl.close();
   }
 }
 
-void main();
+if (require.main === module) {
+  void main();
+}

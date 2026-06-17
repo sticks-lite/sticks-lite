@@ -37,7 +37,7 @@ export function lex(source: string): Token[] {
         "This line mixes tabs and spaces for indentation.",
         lineNumber,
         1,
-        "Use only spaces or only tabs for indentation in one file."
+        "Use one indentation style. Four spaces per block is recommended."
       );
     }
     if (indentText.length > 0) {
@@ -50,7 +50,7 @@ export function lex(source: string): Token[] {
           "This file mixes tabs and spaces for indentation.",
           lineNumber,
           1,
-          "Pick one indentation style and use it consistently."
+          "Pick one indentation style for the whole file. Four spaces per block is recommended."
         );
       }
     }
@@ -71,7 +71,7 @@ export function lex(source: string): Token[] {
           "This indentation level does not match an earlier block.",
           lineNumber,
           1,
-          "Line up this statement with the block it belongs to."
+          "Line this statement up with an earlier block, or indent it exactly one level deeper after a `:`."
         );
       }
     }
@@ -286,7 +286,13 @@ function tokenizeLine(line: string, lineNumber: number, startColumn: number, tok
         index += 1;
       }
       if (!closed) {
-        throw new SticksLiteError("SyntaxError", "This text value is missing its closing quote.", lineNumber, column);
+        throw new SticksLiteError(
+          "SyntaxError",
+          "This text value is missing its closing quote.",
+          lineNumber,
+          column,
+          "Add the matching quote before the end of the line."
+        );
       }
       tokens.push(makeToken("string", line.slice(start, index), lineNumber, column, value));
       continue;

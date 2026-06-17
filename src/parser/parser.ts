@@ -54,8 +54,12 @@ class Parser {
     if (this.matchKeyword("break")) return { kind: "BreakStatement", line: token.line, column: token.column };
     if (this.matchKeyword("continue")) return { kind: "ContinueStatement", line: token.line, column: token.column };
     if (this.matchKeyword("attempt")) return this.attemptStatement(token);
-    if (this.matchKeyword("orif")) this.error(token, "`orif` must immediately follow an `if` or another `orif` block.");
-    if (this.matchKeyword("otherwise")) this.error(token, "`otherwise` must immediately follow an `if` or `orif` block.");
+    if (this.matchKeyword("orif")) {
+      this.error(token, "`orif` must immediately follow an `if` or another `orif` block.", "Start with `if`, then put each `orif` directly after that block.");
+    }
+    if (this.matchKeyword("otherwise")) {
+      this.error(token, "`otherwise` must immediately follow an `if` or `orif` block.", "Use `otherwise:` only as the final block in an `if` chain.");
+    }
     if (this.matchKeyword("when")) this.error(token, "`when` must immediately follow an `attempt` block.");
 
     const expression = this.expression();
@@ -132,7 +136,7 @@ class Parser {
     while (this.matchKeyword("orif")) {
       const orif = this.previous();
       if (this.check("leftParen")) {
-        this.error(this.peek(), "`orif` conditions do not use surrounding parentheses.");
+        this.error(this.peek(), "`orif` conditions do not use surrounding parentheses.", "Write `orif score >= 80:`.");
       }
       branches.push({
         condition: this.expression(),
@@ -146,7 +150,7 @@ class Parser {
       otherwise = this.blockAfterColon("An `otherwise` statement needs `:` before its block.");
       this.skipNewlines();
       if (this.checkKeyword("orif")) {
-        this.error(this.peek(), "`orif` cannot come after `otherwise`.");
+        this.error(this.peek(), "`orif` cannot come after `otherwise`.", "Put every `orif` before the final `otherwise:` block.");
       }
     }
     return { kind: "IfStatement", branches, otherwise, line: token.line, column: token.column };
@@ -268,7 +272,9 @@ class Parser {
   }
 
   private blockAfterColon(message: string): Statement[] {
-    this.consume("colon", message);
+    if (!this.match("colon")) {
+      this.error(this.peek(), message, "Put `:` at the end of the block-opening line, then indent the next line.");
+    }
     this.consume("newline", "A block must start on the next indented line.");
     this.consume("indent", "This block needs an indented statement.");
     const body: Statement[] = [];
