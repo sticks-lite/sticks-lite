@@ -137,7 +137,7 @@ export class Interpreter {
       case "ForeachStatement": {
         const collection = await this.evaluate(statement.collection, env);
         if (collection.kind !== "list" && collection.kind !== "tuple") {
-          throw new SticksLiteError("TypeError", "`foreach` can iterate over lists and tuples in Sticks Lite v1.0.1.", statement.line, statement.column);
+          throw new SticksLiteError("TypeError", "`foreach` can iterate over lists and tuples.", statement.line, statement.column);
         }
         for (const item of collection.items) {
           this.assignVariable(statement.itemName, item, env, statement.line, statement.column);
