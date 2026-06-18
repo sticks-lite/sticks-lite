@@ -216,7 +216,3 @@ examples, language design, interpreter, compiler, browser IDE, editor extension,
 or command-line tools.
 
 See [LICENSE](LICENSE) for the full license and liability notice.
-
-## License
-
-MIT. The software is provided as-is, without warranty or liability.
