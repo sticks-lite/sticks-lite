@@ -39,6 +39,24 @@ describe("documented public exports", () => {
     expect(output).toEqual(["prompt:Name?", "Hello Maya"]);
   });
 
+  it("RuntimeIO receives raw prompts, supports empty input, and preserves output order", async () => {
+    const events: string[] = [];
+    const io: RuntimeIO = {
+      async readInput(prompt) {
+        events.push(`prompt:${prompt}`);
+        return "";
+      },
+      writeOutput(text) {
+        events.push(`output:${text}`);
+      }
+    };
+
+    const result = await runSource("say \"before\"\nanswer = ask \"\"\nsay \"after\" + answer\n", io);
+
+    expect(result).toMatchObject({ ok: true, output: ["before", "after"] });
+    expect(events).toEqual(["output:before", "prompt:", "output:after"]);
+  });
+
   it("runSource returns a failed RunResult with output produced before the error", async () => {
     const result: RunResult = await runSource("say \"before\"\nsay toText(missing)\n");
     expect(result.ok).toBe(false);

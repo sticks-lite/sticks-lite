@@ -26,6 +26,12 @@ Run a Sticks Lite file:
 sticks main.slite
 ```
 
+Check the installed CLI:
+
+```sh
+sticks --version
+```
+
 Run a directory containing `main.slite`:
 
 ```sh
@@ -41,11 +47,14 @@ sticks examples/hello.slite
 sticks ./student-project
 ```
 
-When a directory is provided, Sticks Lite looks for:
+When a directory is provided, Sticks Lite looks for an exactly named entry file:
 
 ```txt
 main.slite
 ```
+
+The exact lowercase filename is required on Windows, macOS, and Linux so
+classroom projects behave the same way everywhere.
 
 ## Example
 

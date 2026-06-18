@@ -52,10 +52,20 @@ export async function resolveProgramPath(fileOrDirectory: string): Promise<strin
   return fileOrDirectory;
 }
 
+export function pathBasenameForDisplay(filePath: string): string {
+  const normalized = filePath.replace(/\\/g, "/");
+  const parts = normalized.split("/").filter(Boolean);
+  return parts[parts.length - 1] ?? filePath;
+}
+
+export function hasSliteExtension(filePath: string): boolean {
+  return path.extname(pathBasenameForDisplay(filePath)).toLowerCase() === EXTENSION;
+}
+
 function assertSliteExtension(filePath: string): void {
-  if (path.extname(filePath).toLowerCase() !== EXTENSION) {
+  if (!hasSliteExtension(filePath)) {
     throw new CliInputError(
-      `Sticks Lite can only run \`${EXTENSION}\` files. Received \`${path.basename(filePath)}\`.`,
+      `Sticks Lite can only run \`${EXTENSION}\` files. Received \`${pathBasenameForDisplay(filePath)}\`.`,
       "Rename the file to end in `.slite`, such as `main.slite`."
     );
   }
@@ -76,6 +86,20 @@ async function resolveDirectoryEntry(directory: string): Promise<string> {
     );
   }
 
+  if (!entries.includes(ENTRY_FILE)) {
+    const differentlyCasedEntry = entries.find((entry) => entry.toLowerCase() === ENTRY_FILE);
+    if (differentlyCasedEntry) {
+      throw new CliInputError(
+        `\`${directory}\` contains \`${differentlyCasedEntry}\`, but the entry file must be named \`${ENTRY_FILE}\`.`,
+        "Rename the file exactly to `main.slite` so the project runs the same way on Windows, macOS, and Linux."
+      );
+    }
+    throw new CliInputError(
+      `\`${directory}\` does not contain \`${ENTRY_FILE}\`.`,
+      "Create `main.slite` in that folder, or pass a specific `.slite` file."
+    );
+  }
+
   const entry = path.join(directory, ENTRY_FILE);
   try {
     const info = await stat(entry);
@@ -91,10 +115,7 @@ async function resolveDirectoryEntry(directory: string): Promise<string> {
     if (code === "EACCES" || code === "EPERM") {
       throw readablePathError(entry, error);
     }
-    throw new CliInputError(
-      `\`${directory}\` does not contain \`${ENTRY_FILE}\`.`,
-      "Create `main.slite` in that folder, or pass a specific `.slite` file."
-    );
+    throw missingPathError(entry, error);
   }
 
   await assertReadable(entry);

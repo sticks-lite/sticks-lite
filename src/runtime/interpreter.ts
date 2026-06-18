@@ -142,7 +142,7 @@ export class Interpreter {
             `\`foreach\` can iterate over lists and tuples, not ${typeName(collection)}.`,
             statement.line,
             statement.column,
-            "Dictionary iteration is not supported in Sticks Lite v1.0.8. Use a list or tuple instead."
+            "Dictionary iteration is not supported in Sticks Lite v1.0.11. Use a list or tuple instead."
           );
         }
         for (const item of collection.items) {

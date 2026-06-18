@@ -1,8 +1,10 @@
-import { chmod, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { Readable, Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
-import { readProgram, resolveProgramPath } from "../src/cli/files";
+import { formatPrompt, runCli } from "../src/cli/main";
+import { hasSliteExtension, pathBasenameForDisplay, readProgram, resolveProgramPath } from "../src/cli/files";
 
 const tempRoots: string[] = [];
 
@@ -17,6 +19,13 @@ afterEach(async () => {
 });
 
 describe("CLI file handling", () => {
+  it("handles Windows-style paths for display and extension checks", () => {
+    expect(pathBasenameForDisplay("C:\\Users\\student\\project\\main.slite")).toBe("main.slite");
+    expect(pathBasenameForDisplay("C:\\Users\\student\\project\\notes.txt")).toBe("notes.txt");
+    expect(hasSliteExtension("C:\\Users\\student\\project\\MAIN.SLITE")).toBe(true);
+    expect(hasSliteExtension("C:\\Users\\student\\project\\README.md")).toBe(false);
+  });
+
   it("reads a direct .slite file", async () => {
     const directory = await makeTempDir();
     const file = path.join(directory, "lesson.slite");
@@ -31,6 +40,13 @@ describe("CLI file handling", () => {
     await writeFile(file, "say \"main\"\n", "utf8");
 
     await expect(resolveProgramPath(directory)).resolves.toBe(file);
+  });
+
+  it("requires an exact main.slite entry for cross-platform directory execution", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "Main.slite"), "say \"wrong case\"\n", "utf8");
+
+    await expect(readProgram(directory)).rejects.toThrow(/must be named `main\.slite`/);
   });
 
   it("reports missing files clearly", async () => {
@@ -68,3 +84,106 @@ describe("CLI file handling", () => {
     }
   });
 });
+
+describe("CLI runtime behavior", () => {
+  it("formats prompts predictably", () => {
+    expect(formatPrompt("Name?")).toBe("Name? ");
+    expect(formatPrompt("Name? ")).toBe("Name? ");
+    expect(formatPrompt("Line\n")).toBe("Line\n");
+    expect(formatPrompt("")).toBe("");
+  });
+
+  it("runs main.slite from the current directory like a global sticks command", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "main.slite"), "say \"global\"\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: [], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("global\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("prints the package version for global CLI checks", async () => {
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["--version"], input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("1.0.11\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("runs a POSIX-style file path on macOS and Linux", async () => {
+    const directory = await makeTempDir();
+    const nested = path.join(directory, "lessons");
+    await mkdir(nested);
+    await writeFile(path.join(nested, "hello.slite"), "say \"posix\"\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["lessons/hello.slite"], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("posix\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("keeps prompt and output ordering stable for CLI input/output", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "main.slite"), "say \"one\"\nname = ask \"Name?\"\nsay \"two \" + name\nsay \"three\"\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: [], cwd: directory, input: Readable.from(["Ada\n"]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("one\nName? two Ada\nthree\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("handles empty CLI input and predictable output newlines", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "main.slite"), "answer = ask \"Value?\"\nsay \"Got \" + answer\nsay \"Done\"", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: [], cwd: directory, input: Readable.from(["\n"]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("Value? Got \nDone\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("returns a non-zero code and writes errors to stderr", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "main.slite"), "say missing\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: [], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(1);
+    expect(output.text()).toBe("");
+    expect(error.text()).toContain("NameError");
+  });
+});
+
+function captureWritable() {
+  let value = "";
+  const stream = new Writable({
+    write(chunk, _encoding, callback) {
+      value += chunk.toString();
+      callback();
+    }
+  });
+  return {
+    stream,
+    text() {
+      return value;
+    }
+  };
+}
