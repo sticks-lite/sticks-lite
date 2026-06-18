@@ -22,6 +22,7 @@ import {
   valuesEqual,
   type SticksValue
 } from "./values";
+import { ERROR_NAMES } from "../lexer/token";
 
 class ReturnSignal {
   constructor(readonly value: SticksValue) {}
@@ -57,7 +58,13 @@ export class Interpreter {
     for (const statement of statements) {
       if (statement.kind !== "FunctionStatement") continue;
       if (PROTECTED_NAMES.has(statement.name)) {
-        throw new SticksLiteError("FunctionError", `\`${statement.name}\` is a protected name.`, statement.line, statement.column, "Choose a different function name.");
+        throw new SticksLiteError(
+          "FunctionError",
+          `\`${statement.name}\` is a protected ${protectedNameKind(statement.name)} and cannot be used as a function name.`,
+          statement.line,
+          statement.column,
+          "Choose a different function name that is not a built-in, error name, constant, or existing function."
+        );
       }
       if (this.functions.has(statement.name)) {
         throw new SticksLiteError("FunctionError", `Function \`${statement.name}\` is already defined.`, statement.line, statement.column, "Rename one function or keep a single definition.");
@@ -142,7 +149,7 @@ export class Interpreter {
             `\`foreach\` can iterate over lists and tuples, not ${typeName(collection)}.`,
             statement.line,
             statement.column,
-            "Dictionary iteration is not supported in Sticks Lite v1.0.11. Use a list or tuple instead."
+            "Dictionary iteration is not supported in Sticks Lite v1.0.12. Use a list or tuple instead."
           );
         }
         for (const item of collection.items) {
@@ -322,17 +329,29 @@ export class Interpreter {
       throw new SticksLiteError("ConstantError", `\`${name}\` is a constant and cannot be changed.`, line, column, "Create a new variable instead of assigning to a `DEFINE` name.");
     }
     if (BUILTIN_NAMES.has(name) || this.functions.has(name) || PROTECTED_NAMES.has(name)) {
-      throw new SticksLiteError("NameError", `\`${name}\` is a protected name and cannot be overwritten.`, line, column, "Choose a different variable name.");
+      throw new SticksLiteError(
+        "NameError",
+        `\`${name}\` is a protected ${protectedNameKind(name)} and cannot be overwritten.`,
+        line,
+        column,
+        "Choose a different variable name that is not a built-in, error name, constant, or existing function."
+      );
     }
     env.values.set(name, value);
   }
 
   private defineConstant(name: string, value: SticksValue, line: number, column: number): void {
     if (this.globals.values.has(name) || this.constants.has(name)) {
-      throw new SticksLiteError("ConstantError", `Constant \`${name}\` is already defined.`, line, column, "Use a different constant name or keep the first definition.");
+      throw new SticksLiteError("ConstantError", `\`${name}\` is already defined and cannot be redefined as a constant.`, line, column, "Use a different constant name or keep the first definition.");
     }
     if (this.functions.has(name) || PROTECTED_NAMES.has(name)) {
-      throw new SticksLiteError("ConstantError", `\`${name}\` is a protected name and cannot be used for a constant.`, line, column, "Choose a classroom-friendly name that is not a built-in or error name.");
+      throw new SticksLiteError(
+        "ConstantError",
+        `\`${name}\` is a protected ${protectedNameKind(name)} and cannot be used for a constant.`,
+        line,
+        column,
+        "Choose a classroom-friendly constant name that is not a built-in, error name, or function."
+      );
     }
     this.globals.values.set(name, value);
     this.constants.add(name);
@@ -469,6 +488,12 @@ function typeName(value: SticksValue): string {
   if (value.kind === "builtin") return "built-in function";
   if (value.kind === "function") return "function";
   return value.kind;
+}
+
+function protectedNameKind(name: string): string {
+  if (BUILTIN_NAMES.has(name)) return "built-in function name";
+  if (ERROR_NAMES.has(name)) return "error name";
+  return "function name";
 }
 
 export async function runSource(source: string, io?: RuntimeIO): Promise<RunResult> {

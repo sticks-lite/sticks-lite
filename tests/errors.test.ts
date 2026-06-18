@@ -53,7 +53,7 @@ describe("friendly errors", () => {
   });
 
   it("reports protected built-in overwrite", async () => {
-    await expect(errorFor("random = 5\n")).resolves.toContain("protected name");
+    await expect(errorFor("random = 5\n")).resolves.toContain("protected built-in function name");
   });
 
   it("reports wrong argument counts", async () => {
@@ -94,7 +94,7 @@ describe("friendly errors", () => {
   it("reports bad collection operations", async () => {
     const foreachError = await errorFor("person = {\"name\": \"Maya\"}\nforeach key in person:\n    say key\n");
     expect(foreachError).toContain("not dictionary");
-    expect(foreachError).toContain("v1.0.11");
+    expect(foreachError).toContain("v1.0.12");
 
     const pushError = await errorFor("items = (1, 2)\npush(items, 3)\n");
     expect(pushError).toContain("must be a list, not tuple");

@@ -206,6 +206,8 @@ Sticks Lite keeps the interpreter small and explicit, but it is not a sandbox.
 - The CLI wrapper reads source files and handles terminal I/O.
 - Built-in names, error names, constants, and functions are protected from
   accidental overwrite.
+- Core collection, function, constant, and protected-name semantics are covered
+  by regression tests before feature releases.
 - Friendly errors are intended for learning and debugging, not security
   enforcement.
 - Do not run untrusted programs without external controls and supervision.
