@@ -2,11 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
 [![npm downloads](https://img.shields.io/npm/dm/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
-[![Sticks Lite](https://img.shields.io/npm/v/sticks-lite?label=Sticks%20Lite&color=5cad4a)](https://github.com/sticks-lite/sticks-lite)
-[![Runtime dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](#security-model)
 [![GitHub forks](https://img.shields.io/github/forks/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/forks)
-[![CLI](https://img.shields.io/badge/CLI-sticks-111111.svg)](#command-line)
-[![Tests](https://img.shields.io/badge/tests-vitest%20%2B%20examples-brightgreen.svg)](#development)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Sticks Lite is a small educational programming language for monitored
