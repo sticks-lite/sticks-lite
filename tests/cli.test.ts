@@ -26,7 +26,7 @@ describe("CLI file handling", () => {
     expect(hasSliteExtension("C:\\Users\\student\\project\\README.md")).toBe(false);
   });
 
-  it("reads a direct .slite file", async () => {
+  it("reads a direct .slite source file", async () => {
     const directory = await makeTempDir();
     const file = path.join(directory, "lesson.slite");
     await writeFile(file, "say \"hi\"\n", "utf8");
@@ -59,7 +59,7 @@ describe("CLI file handling", () => {
     const file = path.join(directory, "notes.txt");
     await writeFile(file, "say \"hi\"\n", "utf8");
 
-    await expect(readProgram(file)).rejects.toThrow(/can only run `.slite` files/);
+    await expect(readProgram(file)).rejects.toThrow(/can only run `.slite` source files/);
   });
 
   it("reports empty directories and directories missing main.slite", async () => {
@@ -113,7 +113,7 @@ describe("CLI runtime behavior", () => {
     const code = await runCli({ argv: ["--version"], input: Readable.from([]), output: output.stream, error: error.stream });
 
     expect(code).toBe(0);
-    expect(output.text()).toBe("1.0.13\n");
+    expect(output.text()).toBe("1.0.14\n");
     expect(error.text()).toBe("");
   });
 

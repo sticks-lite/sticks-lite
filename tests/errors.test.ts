@@ -94,7 +94,7 @@ describe("friendly errors", () => {
   it("reports bad collection operations", async () => {
     const foreachError = await errorFor("person = {\"name\": \"Maya\"}\nforeach key in person:\n    say key\n");
     expect(foreachError).toContain("not dictionary");
-    expect(foreachError).toContain("v1.0.13");
+    expect(foreachError).toContain("v1.0.14");
 
     const pushError = await errorFor("items = (1, 2)\npush(items, 3)\n");
     expect(pushError).toContain("must be a list, not tuple");

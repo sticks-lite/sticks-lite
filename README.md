@@ -2,7 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
 [![npm downloads](https://img.shields.io/npm/dm/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
-[![GitHub forks](https://img.shields.io/github/forks/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/forks)
+[![GitHub stars](https://img.shields.io/github/stars/brisqdev/sticks-lite?style=flat)](https://github.com/brisqdev/sticks-lite/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/brisqdev/sticks-lite?style=flat)](https://github.com/brisqdev/sticks-lite/forks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Sticks Lite is a small educational programming language for monitored
@@ -10,7 +11,17 @@ classroom environments. It is designed to teach introductory computer-science
 concepts with readable syntax, indentation-based blocks, friendly errors, and a
 compact TypeScript interpreter.
 
-This repository contains the language core and the `sticks` command-line tool.
+This repository contains the language core, interpreter, and `sticks` CLI.
+
+## Who this is for
+
+- Teachers and mentors introducing programming in a supervised classroom.
+- Students learning variables, conditionals, loops, functions, collections, and errors.
+- Clubs, camps, and beginner computer-science lessons that need a small `.slite`
+  language and the `sticks` CLI.
+
+Sticks Lite is intentionally small. It is not intended for production software
+or unsupervised execution of untrusted source files.
 
 ## Install
 
@@ -20,16 +31,16 @@ Install globally from npm:
 npm install -g sticks-lite
 ```
 
-Run a Sticks Lite file:
-
-```sh
-sticks main.slite
-```
-
 Check the installed CLI:
 
 ```sh
 sticks --version
+```
+
+Run a `.slite` source file:
+
+```sh
+sticks main.slite
 ```
 
 Run a directory containing `main.slite`:
@@ -38,9 +49,9 @@ Run a directory containing `main.slite`:
 sticks path/to/project
 ```
 
-## Command Line
+## CLI
 
-The CLI accepts either a `.slite` file or a project directory.
+The `sticks` CLI accepts either a `.slite` source file or a project directory.
 
 ```sh
 sticks examples/hello.slite
@@ -129,7 +140,7 @@ const result = await runSource('say "Hello, world!"', {
 The language core is platform-independent.
 
 ```txt
-source text
+source file text
 lexer
 parser
 AST
@@ -183,28 +194,18 @@ npm run check
 
 ## Responsible Use
 
-Sticks Lite is intended for monitored educational environments and introductory
-computer-science teaching.
+Use Sticks Lite in supervised learning settings. A teacher, mentor, or parent
+should review what students run and decide whether each lesson is appropriate.
 
-It is not designed or represented as:
-
-- a production programming language,
-- a security sandbox,
-- a permissions boundary,
-- a package ecosystem for untrusted code,
-- a high-risk, safety-critical, medical, legal, financial, or infrastructure
-  tool.
-
-Teachers and operators are responsible for supervising use, reviewing programs
-before execution, and deciding whether Sticks Lite is appropriate for their
-environment.
+Sticks Lite is not for production apps, security sandboxing, unsupervised
+execution of untrusted source files, or safety-critical work.
 
 ## Security Model
 
 Sticks Lite keeps the interpreter small and explicit, but it is not a sandbox.
 
 - The language core has no direct file-system or network APIs.
-- The CLI wrapper reads source files and handles terminal I/O.
+- The CLI wrapper reads `.slite` source files and handles terminal I/O.
 - Built-in names, error names, constants, and functions are protected from
   accidental overwrite.
 - Core collection, function, constant, and protected-name semantics are covered
@@ -220,7 +221,6 @@ warranty of any kind. Kabir Sekhon, the Sticks Lite Project Authors,
 contributors, copyright holders, and maintainers are not liable for claims,
 damages, losses, misuse, classroom deployment issues, production use, data loss,
 security issues, or other liability arising from the software, documentation,
-examples, language design, interpreter, compiler, browser IDE, editor extension,
-or command-line tools.
+examples, language design, interpreter, CLI, browser IDE, or editor extension.
 
 See [LICENSE](LICENSE) for the full license and liability notice.

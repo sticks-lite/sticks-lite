@@ -1,23 +1,22 @@
 {
   "name": "sticks-lite",
-  "version": "1.0.13",
-  "description": "The Sticks Lite compiler/interpreter and CLI.",
+  "version": "1.0.14",
+  "description": "The Sticks Lite interpreter and CLI.",
   "keywords": [
     "language",
     "education",
     "educational",
     "interpreter",
-    "compiler",
     "classroom",
     "teaching"
   ],
-  "homepage": "https://github.com/sticks-lite/sticks-lite#readme",
+  "homepage": "https://github.com/brisqdev/sticks-lite#readme",
   "bugs": {
-    "url": "https://github.com/sticks-lite/sticks-lite/issues"
+    "url": "https://github.com/brisqdev/sticks-lite/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sticks-lite/sticks-lite.git"
+    "url": "git+https://github.com/brisqdev/sticks-lite.git"
   },
   "license": "MIT",
   "author": "brisqdev",

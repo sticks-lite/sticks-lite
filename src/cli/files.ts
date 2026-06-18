@@ -42,7 +42,7 @@ export async function resolveProgramPath(fileOrDirectory: string): Promise<strin
 
   if (!info.isFile()) {
     throw new CliInputError(
-      `\`${fileOrDirectory}\` is not a Sticks Lite file or folder.`,
+      `\`${fileOrDirectory}\` is not a Sticks Lite source file or folder.`,
       "Run `sticks path/to/main.slite` or `sticks path/to/folder`."
     );
   }
@@ -65,8 +65,8 @@ export function hasSliteExtension(filePath: string): boolean {
 function assertSliteExtension(filePath: string): void {
   if (!hasSliteExtension(filePath)) {
     throw new CliInputError(
-      `Sticks Lite can only run \`${EXTENSION}\` files. Received \`${pathBasenameForDisplay(filePath)}\`.`,
-      "Rename the file to end in `.slite`, such as `main.slite`."
+      `Sticks Lite can only run \`${EXTENSION}\` source files. Received \`${pathBasenameForDisplay(filePath)}\`.`,
+      "Rename the source file to end in `.slite`, such as `main.slite`."
     );
   }
 }
@@ -82,7 +82,7 @@ async function resolveDirectoryEntry(directory: string): Promise<string> {
   if (entries.length === 0) {
     throw new CliInputError(
       `\`${directory}\` is an empty folder.`,
-      "Add `main.slite` to the folder, or run `sticks path/to/file.slite`."
+      "Add `main.slite` to the folder, or run `sticks path/to/source.slite`."
     );
   }
 
@@ -96,7 +96,7 @@ async function resolveDirectoryEntry(directory: string): Promise<string> {
     }
     throw new CliInputError(
       `\`${directory}\` does not contain \`${ENTRY_FILE}\`.`,
-      "Create `main.slite` in that folder, or pass a specific `.slite` file."
+      "Create `main.slite` in that folder, or pass a specific `.slite` source file."
     );
   }
 
@@ -106,7 +106,7 @@ async function resolveDirectoryEntry(directory: string): Promise<string> {
     if (!info.isFile()) {
       throw new CliInputError(
         `\`${entry}\` exists but is not a file.`,
-        "Replace it with a Sticks Lite file named `main.slite`."
+        "Replace it with a Sticks Lite source file named `main.slite`."
       );
     }
   } catch (error) {
