@@ -90,6 +90,7 @@ say toText(double(MAX_SCORE))
 - `attempt` and `when` for beginner-friendly error handling.
 - Built-ins for conversion, type checks, collection operations, and math.
 - Friendly `SticksLiteError` messages with line, column, and optional hints.
+- Comment and math behavior is covered by stability tests for future releases.
 
 ## Public API
 

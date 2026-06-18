@@ -113,7 +113,7 @@ describe("CLI runtime behavior", () => {
     const code = await runCli({ argv: ["--version"], input: Readable.from([]), output: output.stream, error: error.stream });
 
     expect(code).toBe(0);
-    expect(output.text()).toBe("1.0.12\n");
+    expect(output.text()).toBe("1.0.13\n");
     expect(error.text()).toBe("");
   });
 

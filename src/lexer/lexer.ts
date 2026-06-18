@@ -16,12 +16,12 @@ const SINGLE_CHAR_TOKENS: Record<string, Token["type"]> = {
 };
 
 export function lex(source: string): Token[] {
-  const cleanSource = stripComments(source);
+  const cleanSource = stripComments(source.replace(/\r\n?/g, "\n"));
   const tokens: Token[] = [];
   const indentStack = [0];
   let indentStyle: "spaces" | "tabs" | null = null;
 
-  const lines = cleanSource.replace(/\r\n?/g, "\n").split("\n");
+  const lines = cleanSource.split("\n");
   for (let index = 0; index < lines.length; index += 1) {
     const lineNumber = index + 1;
     const rawLine = lines[index];
