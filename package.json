@@ -1,6 +1,6 @@
 {
   "name": "sticks-lite",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "The Sticks Lite compiler/interpreter and CLI.",
   "keywords": [
     "language",
