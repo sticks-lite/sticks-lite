@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { formatPrompt, runCli } from "../src/cli/main";
 import { hasSliteExtension, pathBasenameForDisplay, readProgram, resolveProgramPath } from "../src/cli/files";
 
+const packageVersion = (require("../package.json") as { version: string }).version;
 const tempRoots: string[] = [];
 
 async function makeTempDir(): Promise<string> {
@@ -113,7 +114,7 @@ describe("CLI runtime behavior", () => {
     const code = await runCli({ argv: ["--version"], input: Readable.from([]), output: output.stream, error: error.stream });
 
     expect(code).toBe(0);
-    expect(output.text()).toBe("1.0.14\n");
+    expect(output.text()).toBe(`${packageVersion}\n`);
     expect(error.text()).toBe("");
   });
 

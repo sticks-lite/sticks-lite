@@ -94,7 +94,7 @@ describe("friendly errors", () => {
   it("reports bad collection operations", async () => {
     const foreachError = await errorFor("person = {\"name\": \"Maya\"}\nforeach key in person:\n    say key\n");
     expect(foreachError).toContain("not dictionary");
-    expect(foreachError).toContain("v1.0.14");
+    expect(foreachError).toContain("Dictionary iteration is not supported in Sticks Lite");
 
     const pushError = await errorFor("items = (1, 2)\npush(items, 3)\n");
     expect(pushError).toContain("must be a list, not tuple");
