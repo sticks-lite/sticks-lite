@@ -10,13 +10,13 @@
     "classroom",
     "teaching"
   ],
-  "homepage": "https://github.com/brisqdev/sticks-lite#readme",
+  "homepage": "https://github.com/sticks-lite/sticks-lite#readme",
   "bugs": {
-    "url": "https://github.com/brisqdev/sticks-lite/issues"
+    "url": "https://github.com/sticks-lite/sticks-lite/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/brisqdev/sticks-lite.git"
+    "url": "git+https://github.com/sticks-lite/sticks-lite.git"
   },
   "license": "MIT",
   "author": "brisqdev",
