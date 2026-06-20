@@ -326,7 +326,7 @@ export class Interpreter {
 
   private assignVariable(name: string, value: SticksValue, env: Environment, line: number, column: number): void {
     if (this.constants.has(name)) {
-      throw new SticksLiteError("ConstantError", `\`${name}\` is a constant and cannot be changed.`, line, column, "Create a new variable instead of assigning to a `DEFINE` name.");
+      throw new SticksLiteError("ConstantError", `\`${name}\` is a constant and cannot be changed.`, line, column, `Create a new variable name instead; constants made with \`DEFINE ${name} = ...\` stay fixed.`);
     }
     if (BUILTIN_NAMES.has(name) || this.functions.has(name) || PROTECTED_NAMES.has(name)) {
       throw new SticksLiteError(
@@ -334,7 +334,7 @@ export class Interpreter {
         `\`${name}\` is a protected ${protectedNameKind(name)} and cannot be overwritten.`,
         line,
         column,
-        "Choose a different variable name that is not a built-in, error name, constant, or existing function."
+        `Choose a different variable name, for example \`${name}Value\` or \`my${capitalizeName(name)}\`.`
       );
     }
     env.values.set(name, value);
@@ -350,7 +350,7 @@ export class Interpreter {
         `\`${name}\` is a protected ${protectedNameKind(name)} and cannot be used for a constant.`,
         line,
         column,
-        "Choose a classroom-friendly constant name that is not a built-in, error name, or function."
+        `Choose a classroom-friendly constant name that is not protected, such as \`MAX_${name.toUpperCase()}_VALUE\`.`
       );
     }
     this.globals.values.set(name, value);
@@ -362,7 +362,7 @@ export class Interpreter {
       return callee.call(args, line, column);
     }
     if (callee.kind !== "function") {
-      throw new SticksLiteError("FunctionError", `Only functions can be called, not ${typeName(callee)}.`, line, column, "Remove `(...)` or call a function created with `new`.");
+      throw new SticksLiteError("FunctionError", `Only functions can be called, not ${typeName(callee)}.`, line, column, "Remove `(...)` if this is a value, or call a function created with `new greet:`.");
     }
     const declaration: FunctionStatement = callee.declaration;
     if (args.length !== declaration.params.length) {
@@ -372,7 +372,7 @@ export class Interpreter {
         `\`${declaration.name}\` expects ${declaration.params.length} argument${declaration.params.length === 1 ? "" : "s"}, but got ${args.length}.`,
         line,
         column,
-        `Call it as \`${declaration.name}(${expected})\`.`
+        expected.length === 0 ? `Call it as \`${declaration.name}()\`.` : `Call it as \`${declaration.name}(${expected})\`.`
       );
     }
     const local = new Environment(this.globals, true);
@@ -396,7 +396,7 @@ export class Interpreter {
 
     if (["<", ">", "<=", ">="].includes(operator)) {
       if (left.kind !== "number" || right.kind !== "number") {
-        throw new SticksLiteError("TypeError", `\`${operator}\` compares numbers.`, line, column, "Convert text input with `toNumber(...)` before comparing.");
+        throw new SticksLiteError("TypeError", `\`${operator}\` compares numbers.`, line, column, "Convert text input with `toNumber(...)` before comparing, for example `toNumber(ageText) >= 10`.");
       }
       if (operator === "<") return booleanValue(left.value < right.value);
       if (operator === ">") return booleanValue(left.value > right.value);
@@ -414,7 +414,7 @@ export class Interpreter {
         `\`${operator}\` works on numbers${operator === "+" ? " or two text values" : ""}.`,
         line,
         column,
-        operator === "+" ? "Use `toText(...)` to build text, or convert input with `toNumber(...)` for math." : "Use numeric values on both sides."
+        operator === "+" ? "Use `toText(...)` to build text, for example `\"Score: \" + toText(score)`, or convert input with `toNumber(...)` for math." : "Use numeric values on both sides, such as `10 - 3`."
       );
     }
     switch (operator) {
@@ -425,13 +425,13 @@ export class Interpreter {
       case "*":
         return numberValue(left.value * right.value);
       case "/":
-        if (right.value === 0) throw new SticksLiteError("MathError", "Division by zero is not allowed.", line, column, "Check the divisor before dividing.");
+        if (right.value === 0) throw new SticksLiteError("MathError", "Division by zero is not allowed.", line, column, "Check the divisor before dividing, for example `if divisor != 0:`.");
         return numberValue(left.value / right.value);
       case "%":
-        if (right.value === 0) throw new SticksLiteError("MathError", "Modulo by zero is not allowed.", line, column, "Check the right side of `%` before using it.");
+        if (right.value === 0) throw new SticksLiteError("MathError", "Modulo by zero is not allowed.", line, column, "Check the right side of `%` before using it, for example `if divisor != 0:`.");
         return numberValue(left.value % right.value);
       case "div":
-        if (right.value === 0) throw new SticksLiteError("MathError", "Integer division by zero is not allowed.", line, column, "Check the divisor before using `div`.");
+        if (right.value === 0) throw new SticksLiteError("MathError", "Integer division by zero is not allowed.", line, column, "Check the divisor before using `div`, for example `if divisor != 0:`.");
         return numberValue(Math.trunc(left.value / right.value));
       default:
         throw new SticksLiteError("RuntimeError", `Unsupported operator \`${operator}\`.`, line, column, "This usually means the parser and interpreter disagree.");
@@ -448,7 +448,7 @@ export class Interpreter {
       }
       const value = object.entries.get(index.value);
       if (value === undefined) {
-        throw new SticksLiteError("KeyError", `Dictionary key \`${index.value}\` does not exist.`, line, column, "Check the key spelling, or assign that key before reading it.");
+        throw new SticksLiteError("KeyError", `Dictionary key \`${index.value}\` does not exist.`, line, column, `Check the key spelling, or assign it first with \`dictionary["${index.value}"] = ...\`.`);
       }
       return value;
     }
@@ -478,7 +478,7 @@ export class Interpreter {
 
   private requireBoolean(value: SticksValue, line: number, column: number): boolean {
     if (value.kind !== "boolean") {
-      throw new SticksLiteError("TypeError", "Conditions must be `True` or `False`.", line, column, "Compare values explicitly, such as `score > 0`.");
+    throw new SticksLiteError("TypeError", "Conditions must be `True` or `False`.", line, column, "Compare values explicitly, such as `score > 0`, instead of using a raw number or text value.");
     }
     return value.value;
   }
@@ -494,6 +494,11 @@ function protectedNameKind(name: string): string {
   if (BUILTIN_NAMES.has(name)) return "built-in function name";
   if (ERROR_NAMES.has(name)) return "error name";
   return "function name";
+}
+
+function capitalizeName(name: string): string {
+  if (name.length === 0) return "Value";
+  return name[0].toUpperCase() + name.slice(1);
 }
 
 export async function runSource(source: string, io?: RuntimeIO): Promise<RunResult> {

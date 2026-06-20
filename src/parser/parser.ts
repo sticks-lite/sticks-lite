@@ -60,13 +60,13 @@ class Parser {
     if (this.matchKeyword("otherwise")) {
       this.error(token, "`otherwise` must immediately follow an `if` or `orif` block.", "Use `otherwise:` only as the final block in an `if` chain.");
     }
-    if (this.matchKeyword("when")) this.error(token, "`when` must immediately follow an `attempt` block.");
+    if (this.matchKeyword("when")) this.error(token, "`when` must immediately follow an `attempt` block.", "Write `attempt:` first, then place `when ValueError:` or `when error:` directly after that block.");
 
     const expression = this.expression();
 
     if (this.match("equal")) {
       if (expression.kind !== "IdentifierExpression" && expression.kind !== "IndexExpression") {
-        this.error(token, "The left side of an assignment must be a name or indexed value.");
+        this.error(token, "The left side of an assignment must be a name or indexed value.", "Write assignments like `score = 10`, `items[0] = 10`, or `person[\"name\"] = \"Maya\"`.");
       }
       return {
         kind: "AssignmentStatement",
@@ -80,7 +80,7 @@ class Parser {
     const compound = this.matchCompoundOperator();
     if (compound) {
       if (expression.kind !== "IdentifierExpression") {
-        this.error(token, "Compound assignment works only with an existing variable name.");
+        this.error(token, "Compound assignment works only with an existing variable name.", "Use a simple name like `score += 1`; indexed values such as `items[0] += 1` are not supported.");
       }
       return {
         kind: "CompoundAssignmentStatement",
@@ -95,7 +95,7 @@ class Parser {
     const increment = this.matchIncrementOperator();
     if (increment) {
       if (expression.kind !== "IdentifierExpression") {
-        this.error(token, "Increment and decrement work only with an existing variable name.");
+        this.error(token, "Increment and decrement work only with an existing variable name.", "Use `count++` or `count--` after creating `count`; indexed values such as `items[0]++` are not supported.");
       }
       return {
         kind: "IncrementStatement",
@@ -110,8 +110,8 @@ class Parser {
   }
 
   private constantStatement(token: Token): Statement {
-    const name = this.consume("identifier", "A constant needs a name after `DEFINE`.");
-    this.consume("equal", "A constant definition needs `=` before the value.");
+    const name = this.consume("identifier", "A constant needs a name after `DEFINE`.", "Write constants like `DEFINE MAX_SCORE = 100`.");
+    this.consume("equal", "A constant definition needs `=` before the value.", "Write constants like `DEFINE MAX_SCORE = 100`.");
     return {
       kind: "ConstantStatement",
       name: name.lexeme,
@@ -186,7 +186,7 @@ class Parser {
   private foreachStatement(token: Token): Statement {
     const item = this.consume("identifier", "`foreach` needs a loop variable name.");
     if (!this.matchKeyword("in")) {
-      this.error(this.peek(), "`foreach` needs `in` between the item name and collection.");
+      this.error(this.peek(), "`foreach` needs `in` between the item name and collection.", "Write `foreach score in scores:`.");
     }
     return {
       kind: "ForeachStatement",
@@ -199,20 +199,20 @@ class Parser {
   }
 
   private functionStatement(token: Token): Statement {
-    const name = this.consume("identifier", "A function needs a name after `new`.");
+    const name = this.consume("identifier", "A function needs a name after `new`.", "Write functions like `new greet:` or `new double(value):`.");
     const params: string[] = [];
     if (this.match("leftParen")) {
       if (this.check("rightParen")) {
         this.error(this.peek(), "No-parameter function definitions omit parentheses.", "Write `new greet:` instead of `new greet()`.");
       }
       do {
-        const param = this.consume("identifier", "Function parameters must be names.");
+        const param = this.consume("identifier", "Function parameters must be names.", "Write parameter names like `new add(left, right):`.");
         if (params.includes(param.lexeme)) {
           this.error(param, `The parameter \`${param.lexeme}\` is listed more than once.`, "Each parameter name must be unique.");
         }
         params.push(param.lexeme);
       } while (this.match("comma") && !this.check("rightParen"));
-      this.consume("rightParen", "A function parameter list needs a closing `)`.");
+      this.consume("rightParen", "A function parameter list needs a closing `)`.", "Close the parameter list before the colon, like `new add(a, b):`.");
     }
     return {
       kind: "FunctionStatement",
@@ -242,9 +242,9 @@ class Parser {
       if (this.matchKeyword("error")) {
         errorName = "error";
       } else {
-        const name = this.consume("identifier", "`when` needs an error name or `error`.");
+        const name = this.consume("identifier", "`when` needs an error name or `error`.", "Write handlers like `when ValueError:` or `when error:`.");
         if (!ERROR_NAMES.has(name.lexeme)) {
-          this.error(name, `\`${name.lexeme}\` is not a Sticks Lite error name.`);
+          this.error(name, `\`${name.lexeme}\` is not a Sticks Lite error name.`, "Use a built-in error name such as `ValueError`, `TypeError`, or the catch-all `error`.");
         }
         errorName = name.lexeme as SticksLiteErrorName;
       }
@@ -253,7 +253,7 @@ class Parser {
       }
       if (errorName === "error") {
         if (handlers.some((handler) => handler.errorName === "error")) {
-          this.error(when, "Only one `when error:` catch-all handler is allowed.");
+          this.error(when, "Only one `when error:` catch-all handler is allowed.", "Keep a single `when error:` block at the end of the `attempt` handlers.");
         }
         catchAllSeen = true;
       }
@@ -266,7 +266,7 @@ class Parser {
       this.skipNewlines();
     }
     if (handlers.length === 0) {
-      this.error(token, "`attempt` needs at least one `when` handler.");
+      this.error(token, "`attempt` needs at least one `when` handler.", "Add a handler such as `when ValueError:` or `when error:` directly after the `attempt` block.");
     }
     return { kind: "AttemptStatement", body, handlers, line: token.line, column: token.column };
   }
@@ -275,8 +275,8 @@ class Parser {
     if (!this.match("colon")) {
       this.error(this.peek(), message, "Put `:` at the end of the block-opening line, then indent the next line.");
     }
-    this.consume("newline", "A block must start on the next indented line.");
-    this.consume("indent", "This block needs an indented statement.");
+    this.consume("newline", "A block must start on the next indented line.", "Put the block body on the next line, indented by four spaces.");
+    this.consume("indent", "This block needs an indented statement.", "Indent at least one statement under the block, like `    say \"Hello\"`.");
     const body: Statement[] = [];
     this.skipNewlines();
     while (!this.check("dedent") && !this.isAtEnd()) {
@@ -285,9 +285,9 @@ class Parser {
       this.skipNewlines();
     }
     if (body.length === 0) {
-      this.error(this.peek(), "Blocks need at least one statement.");
+      this.error(this.peek(), "Blocks need at least one statement.", "Add an indented statement such as `say \"Hello\"` inside the block.");
     }
-    this.consume("dedent", "This block is missing its ending indentation.");
+    this.consume("dedent", "This block is missing its ending indentation.", "Line up the next statement with the block opener when the block is finished.");
     return body;
   }
 
@@ -399,7 +399,7 @@ class Parser {
     }
     if (this.matchKeyword("ask")) {
       if (this.check("leftParen")) {
-        this.error(this.peek(), "`ask` does not use parentheses.", "Write `name = ask \"Name?\"`.");
+        this.error(this.peek(), "`ask` does not use parentheses.", "Write `name = ask \"Name?\"` instead of `ask(\"Name?\")`.");
       }
       return { kind: "AskExpression", prompt: this.expression(), line: token.line, column: token.column } satisfies AskExpression;
     }
@@ -415,45 +415,45 @@ class Parser {
     if (this.match("leftParen")) {
       return this.tupleOrGrouped(token);
     }
-    this.error(token, "Expected an expression here.");
+    this.error(token, "Expected an expression here.", "Add a value, name, or call such as `42`, `score`, `toText(score)`, or `ask \"Name?\"`.");
   }
 
   private dictionaryLiteral(token: Token): DictionaryExpression {
     const entries: DictionaryExpression["entries"] = [];
     if (!this.check("rightBrace")) {
       do {
-        const key = this.consume("string", "Dictionary keys must be quoted text.");
-        this.consume("colon", "Dictionary entries need `:` between the key and value.");
+        const key = this.consume("string", "Dictionary keys must be quoted text.", "Write dictionary entries like `{\"name\": \"Maya\"}`.");
+        this.consume("colon", "Dictionary entries need `:` between the key and value.", "Write dictionary entries like `{\"name\": \"Maya\"}`.");
         entries.push({ key: key.literal as string, value: this.expression(), line: key.line, column: key.column });
         if (this.check("rightBrace") && this.previous().type === "comma") {
-          this.error(this.peek(), "Trailing commas are not supported.");
+          this.error(this.peek(), "Trailing commas are not supported.", "Remove the final comma before the closing bracket or brace.");
         }
       } while (this.match("comma"));
     }
-    this.consume("rightBrace", "A dictionary literal needs a closing `}`.");
+    this.consume("rightBrace", "A dictionary literal needs a closing `}`.", "Close the dictionary, for example `{\"name\": \"Maya\"}`.");
     return { kind: "DictionaryExpression", entries, line: token.line, column: token.column };
   }
 
   private tupleOrGrouped(token: Token): Expression {
     if (this.check("rightParen")) {
-      this.error(token, "Empty tuples are not supported in Sticks Lite.");
+      this.error(token, "Empty tuples are not supported in Sticks Lite.", "Use an empty list `[]` when you need an empty collection.");
     }
     const first = this.expression();
     if (!this.match("comma")) {
-      this.consume("rightParen", "A grouped expression needs a closing `)`.");
+      this.consume("rightParen", "A grouped expression needs a closing `)`.", "Close grouped expressions like `(score + 1)`.");
       return first;
     }
     if (this.check("rightParen")) {
-      this.error(this.peek(), "One-item tuples and trailing commas are not supported.");
+      this.error(this.peek(), "One-item tuples and trailing commas are not supported.", "Use `(10)` for grouping, or use a list like `[10]` for one item.");
     }
     const elements: Expression[] = [first, this.expression()];
     while (this.match("comma")) {
       if (this.check("rightParen")) {
-        this.error(this.peek(), "Trailing commas are not supported.");
+        this.error(this.peek(), "Trailing commas are not supported.", "Remove the final comma before the closing bracket or brace.");
       }
       elements.push(this.expression());
     }
-    this.consume("rightParen", "A tuple literal needs a closing `)`.");
+    this.consume("rightParen", "A tuple literal needs a closing `)`.", "Close tuples like `(10, 20)`.");
     return { kind: "TupleExpression", elements, line: token.line, column: token.column };
   }
 
@@ -462,12 +462,12 @@ class Parser {
     if (!this.check(closingType)) {
       do {
         if (this.check(closingType)) {
-          this.error(this.peek(), "Trailing commas are not supported.");
+          this.error(this.peek(), "Trailing commas are not supported.", "Remove the final comma before the closing bracket or brace.");
         }
         args.push(this.expression());
       } while (this.match("comma"));
     }
-    this.consume(closingType, `Expected closing \`${closingLexeme(closingType)}\`.`);
+    this.consume(closingType, `Expected closing \`${closingLexeme(closingType)}\`.`, `Add \`${closingLexeme(closingType)}\` to finish this expression.`);
     return args;
   }
 
@@ -494,7 +494,7 @@ class Parser {
     if (this.match("newline")) return;
     if (this.previous().type === "dedent") return;
     if (this.check("dedent") || this.check("eof")) return;
-    this.error(this.peek(), "Only one statement is allowed per line.");
+    this.error(this.peek(), "Only one statement is allowed per line.", "Move the second statement onto its own line.");
   }
 
   private skipNewlines(): void {
@@ -526,9 +526,9 @@ class Parser {
     return token.type === "keyword" && token.lexeme === keyword;
   }
 
-  private consume(type: TokenType, message: string): Token {
+  private consume(type: TokenType, message: string, hint?: string): Token {
     if (this.check(type)) return this.advance();
-    this.error(this.peek(), message);
+    this.error(this.peek(), message, hint);
   }
 
   private check(type: TokenType): boolean {

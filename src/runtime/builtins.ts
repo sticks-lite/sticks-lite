@@ -47,7 +47,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     const min = expectNumber("random", args[0], 1, line, column);
     const max = expectNumber("random", args[1], 2, line, column);
     if (min > max) {
-      throw new SticksLiteError("ValueError", "`random` needs the minimum to be less than or equal to the maximum.", line, column, "Swap the two arguments or lower the first number.");
+      throw new SticksLiteError("ValueError", "`random` needs the minimum to be less than or equal to the maximum.", line, column, "Swap the two arguments, for example `random(1, 6)`.");
     }
     if (Number.isInteger(min) && Number.isInteger(max)) {
       return numberValue(Math.floor(Math.random() * (max - min + 1)) + min);
@@ -61,7 +61,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     if (value.kind === "text") return numberValue(value.value.length);
     if (value.kind === "list" || value.kind === "tuple") return numberValue(value.items.length);
     if (value.kind === "dictionary") return numberValue(value.entries.size);
-    throw new SticksLiteError("TypeError", `\`length\` works on text, lists, tuples, and dictionaries, not ${typeName(value)}.`, line, column, "Pass a collection or text value.");
+    throw new SticksLiteError("TypeError", `\`length\` works on text, lists, tuples, and dictionaries, not ${typeName(value)}.`, line, column, "Pass text or a collection, such as `length(\"hello\")` or `length([1, 2, 3])`.");
   },
 
   toNumber(args, line, column) {
@@ -69,11 +69,11 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     const value = args[0];
     if (value.kind === "number") return value;
     if (value.kind !== "text") {
-      throw new SticksLiteError("TypeError", `\`toNumber\` converts text into a number, not ${typeName(value)}.`, line, column, "Pass text like `\"42\"`, or use `toText` first if you need text output.");
+      throw new SticksLiteError("TypeError", `\`toNumber\` converts text into a number, not ${typeName(value)}.`, line, column, "Pass text like `\"42\"`, for example `toNumber(\"42\")`.");
     }
     const converted = Number(value.value.trim());
     if (!Number.isFinite(converted) || value.value.trim() === "") {
-      throw new SticksLiteError("ValueError", `\`${value.value}\` cannot be converted to a number.`, line, column, "Use text like `\"42\"` or `\"3.14\"`.");
+      throw new SticksLiteError("ValueError", `\`${value.value}\` cannot be converted to a number.`, line, column, "Use text that contains only a number, such as `\"42\"` or `\"3.14\"`.");
     }
     return numberValue(converted);
   },
@@ -130,7 +130,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     const list = expectList("insert", args[0], 1, line, column);
     const index = expectWholeNumber("insert", args[1], 2, line, column);
     if (index < 0 || index > list.items.length) {
-      throw new SticksLiteError("IndexError", `Index ${index} is outside this list.`, line, column, `Use an index from 0 through ${list.items.length}.`);
+      throw new SticksLiteError("IndexError", `Index ${index} is outside this list.`, line, column, `Use an index from 0 through ${list.items.length}; for example \`insert(items, 0, value)\`.`);
     }
     list.items.splice(index, 0, args[2]);
     return NULL_VALUE;
@@ -141,7 +141,7 @@ const BUILTIN_CALLS: Record<string, BuiltinCallable> = {
     const list = expectList("remove", args[0], 1, line, column);
     const index = expectWholeNumber("remove", args[1], 2, line, column);
     if (index < 0 || index >= list.items.length) {
-      const hint = list.items.length === 0 ? "This list is empty." : `Use an index from 0 through ${list.items.length - 1}.`;
+      const hint = list.items.length === 0 ? "This list is empty, so there is nothing to remove." : `Use an index from 0 through ${list.items.length - 1}; for example \`remove(items, 0)\`.`;
       throw new SticksLiteError("IndexError", `Index ${index} is outside this list.`, line, column, hint);
     }
     list.items.splice(index, 1);
@@ -176,14 +176,14 @@ function expectCount(name: string, args: SticksValue[], count: number, line: num
       `\`${name}\` expects ${count} argument${count === 1 ? "" : "s"}, but got ${args.length}.`,
       line,
       column,
-      `Check the values inside \`${name}(...)\` and pass exactly ${count}.`
+      `Check the values inside \`${name}(...)\` and pass exactly ${count}. Example: \`${builtinExample(name)}\`.`
     );
   }
 }
 
 function expectNumber(name: string, value: SticksValue, position: number, line: number, column: number): number {
   if (value.kind !== "number") {
-    throw new SticksLiteError("TypeError", `Argument ${position} to \`${name}\` must be a number, not ${typeName(value)}.`, line, column, "Convert text input with `toNumber(...)` before using numeric operations.");
+    throw new SticksLiteError("TypeError", `Argument ${position} to \`${name}\` must be a number, not ${typeName(value)}.`, line, column, `Convert text input with \`toNumber(...)\`, or call it like \`${builtinExample(name)}\`.`);
   }
   return value.value;
 }
@@ -198,9 +198,38 @@ function expectWholeNumber(name: string, value: SticksValue, position: number, l
 
 function expectList(name: string, value: SticksValue, position: number, line: number, column: number): Extract<SticksValue, { kind: "list" }> {
   if (value.kind !== "list") {
-    throw new SticksLiteError("TypeError", `Argument ${position} to \`${name}\` must be a list, not ${typeName(value)}.`, line, column, "List operations use square-bracket lists such as `[1, 2, 3]`.");
+    throw new SticksLiteError("TypeError", `Argument ${position} to \`${name}\` must be a list, not ${typeName(value)}.`, line, column, `List operations use square-bracket lists such as \`[1, 2, 3]\`. Example: \`${builtinExample(name)}\`.`);
   }
   return value;
+}
+
+function builtinExample(name: string): string {
+  switch (name) {
+    case "random":
+      return "random(1, 6)";
+    case "length":
+      return "length([1, 2, 3])";
+    case "toNumber":
+      return "toNumber(\"42\")";
+    case "toText":
+      return "toText(42)";
+    case "push":
+      return "push(items, 4)";
+    case "insert":
+      return "insert(items, 0, 4)";
+    case "remove":
+      return "remove(items, 0)";
+    case "round":
+      return "round(3.5)";
+    case "floor":
+      return "floor(3.9)";
+    case "ceiling":
+      return "ceiling(3.1)";
+    case "absolute":
+      return "absolute(-5)";
+    default:
+      return `${name}(value)`;
+  }
 }
 
 function typeName(value: SticksValue): string {

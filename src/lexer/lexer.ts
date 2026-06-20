@@ -108,7 +108,7 @@ function stripComments(source: string): string {
           "Nested block comments are not supported.",
           line,
           column,
-          "Close the first block comment before starting another one."
+          "Close the first block comment with `*/` before starting another `/* comment */`."
         );
       }
       if (char === "*" && next === "/") {
@@ -192,7 +192,7 @@ function stripComments(source: string): string {
       "This block comment was not closed.",
       blockStart.line,
       blockStart.column,
-      "End the comment with `*/`."
+      "End the comment with `*/`, for example `/* notes */`."
     );
   }
 
@@ -291,7 +291,7 @@ function tokenizeLine(line: string, lineNumber: number, startColumn: number, tok
           "This text value is missing its closing quote.",
           lineNumber,
           column,
-          "Add the matching quote before the end of the line."
+          "Add the matching quote before the end of the line, for example `say \"Hello\"`."
         );
       }
       tokens.push(makeToken("string", line.slice(start, index), lineNumber, column, value));
@@ -311,7 +311,13 @@ function tokenizeLine(line: string, lineNumber: number, startColumn: number, tok
       throw new SticksLiteError("SyntaxError", "`!` is not a Sticks Lite operator.", lineNumber, column, "Use `not` or `!=`.");
     }
 
-    throw new SticksLiteError("SyntaxError", `Unexpected character \`${char}\`.`, lineNumber, column);
+    throw new SticksLiteError(
+      "SyntaxError",
+      `Unexpected character \`${char}\`.`,
+      lineNumber,
+      column,
+      "Remove this character, put text in quotes, or use a supported operator such as `+`, `-`, `==`, `!=`, `<`, or `>`."
+    );
   }
 }
 
