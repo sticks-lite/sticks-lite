@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support and classroom-use guidance
+    url: https://github.com/sticks-lite/sticks-lite/blob/main/SUPPORT.md
+    about: Read the support policy before opening a new issue.
+  - name: Security policy
+    url: https://github.com/sticks-lite/sticks-lite/blob/main/SECURITY.md
+    about: Do not report security vulnerabilities in public issues.

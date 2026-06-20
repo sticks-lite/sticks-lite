@@ -1,0 +1,90 @@
+name: Bug report
+description: Report a reproducible problem with Sticks Lite.
+title: "Bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Sticks Lite. Please do not include private student data, credentials, access tokens, or classroom records.
+  - type: input
+    id: version
+    attributes:
+      label: Sticks Lite version
+      description: Run `sticks --version`.
+      placeholder: "1.0.18"
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      description: Run `node --version`.
+      placeholder: "v20.11.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - sticks CLI
+        - lexer/parser
+        - interpreter/runtime
+        - public TypeScript API
+        - examples
+        - documentation
+        - packaging/install
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Minimal .slite source file
+      description: Paste the smallest source file that reproduces the issue.
+      render: slite
+      placeholder: |
+        say "Hello"
+    validations:
+      required: false
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Create main.slite with the source above.
+        2. Run `sticks main.slite`.
+        3. See the error.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include operating system, terminal, install method, and anything else relevant.
+      placeholder: "macOS 15, npm install -g sticks-lite"
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I removed private student data and sensitive information.
+          required: true
+        - label: I checked that this is not a security vulnerability report.
+          required: true

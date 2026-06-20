@@ -1,0 +1,76 @@
+name: Classroom feedback
+description: Share feedback from a supervised educational setting.
+title: "Classroom feedback: "
+labels:
+  - classroom
+  - feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for sharing classroom feedback. Please do not include student names, grades, contact details, school records, private student work, or other identifying information.
+  - type: dropdown
+    id: role
+    attributes:
+      label: Your role
+      options:
+        - teacher
+        - mentor
+        - student
+        - parent or guardian
+        - club/camp organizer
+        - other
+    validations:
+      required: true
+  - type: input
+    id: level
+    attributes:
+      label: Learning level
+      description: Keep this broad and non-identifying.
+      placeholder: "middle school beginner CS, after-school club, intro high school lesson"
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Classroom context
+      description: What were learners trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: worked
+    attributes:
+      label: What worked well?
+    validations:
+      required: false
+  - type: textarea
+    id: confusing
+    attributes:
+      label: What was confusing or hard?
+      description: Mention syntax, docs, errors, examples, install, or IDE workflow if relevant.
+    validations:
+      required: false
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: What would make Sticks Lite easier to teach or learn?
+    validations:
+      required: false
+  - type: textarea
+    id: sample
+    attributes:
+      label: Optional anonymized .slite example
+      description: Only include code if it has no private or identifying information.
+      render: slite
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I removed student-identifying and private information.
+          required: true
+        - label: This feedback comes from or is intended for a monitored educational setting.
+          required: true

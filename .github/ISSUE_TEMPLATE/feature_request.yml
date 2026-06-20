@@ -1,0 +1,67 @@
+name: Feature request
+description: Suggest an improvement to the language, CLI, docs, or public API.
+title: "Feature: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sticks Lite is intentionally small. Feature requests are easiest to review when they explain the classroom problem first.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - language syntax
+        - built-in function
+        - sticks CLI
+        - public TypeScript API
+        - examples
+        - documentation
+        - error message or hint
+        - packaging/install
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or classroom need
+      description: What does this help a teacher or beginning student do?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature or change.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example .slite usage
+      description: If this affects the language, show what the code might look like.
+      render: slite
+      placeholder: |
+        new example:
+            say "What would students write?"
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Is there a simpler way to teach this with the current language?
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: This request is intended for monitored educational use.
+          required: true
+        - label: This request keeps Sticks Lite beginner-friendly.
+          required: true
