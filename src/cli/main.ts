@@ -24,8 +24,8 @@ export async function runCli(options: CliRunOptions = {}): Promise<number> {
   const argv = options.argv ?? process.argv.slice(2);
   const cwd = options.cwd ?? process.cwd();
   const input = options.input ?? processInput;
-  const output = options.output ?? processOutput;
-  const error = options.error ?? processError;
+  const output: Writable = options.output ?? processOutput;
+  const error: Writable = options.error ?? processError;
 
   if (argv[0] === "--version" || argv[0] === "-v") {
     output.write(`${packageVersion()}\n`);

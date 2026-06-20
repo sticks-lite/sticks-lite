@@ -50,8 +50,8 @@
     "prepublishOnly": "npm run check"
   },
   "devDependencies": {
-    "@types/node": "^25.0.3",
+    "@types/node": "^18.19.130",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.16"
+    "vitest": "^3.2.6"
   }
 }
