@@ -15,7 +15,7 @@ describe("README and docs examples", () => {
   for (const relativePath of runnableDocs) {
     it(`runs every slite example in ${relativePath}`, async () => {
       const absolutePath = path.join(workspaceRoot, relativePath);
-      const markdown = fs.readFileSync(absolutePath, "utf8");
+      const markdown = normalizeMarkdownSource(fs.readFileSync(absolutePath, "utf8"));
       const snippets = sliteSnippets(markdown);
       if (snippets.length === 0) return;
 
@@ -37,7 +37,7 @@ describe("README and docs examples", () => {
   }
 
   it("documents every built-in in the generated table and in a runnable example", () => {
-    const markdown = fs.readFileSync(path.join(workspaceRoot, "docs/reference/standard-library.mdx"), "utf8");
+    const markdown = normalizeMarkdownSource(fs.readFileSync(path.join(workspaceRoot, "docs/src/content.ts"), "utf8"));
     const snippets = sliteSnippets(markdown).join("\n\n");
 
     for (const name of BUILTIN_NAMES) {
@@ -65,10 +65,14 @@ function walk(directory: string, files: string[]): void {
       walk(absolute, files);
       continue;
     }
-    if (entry.isFile() && /\.(md|mdx)$/.test(entry.name)) {
+    if (entry.isFile() && /\.(md|mdx|ts|tsx)$/.test(entry.name)) {
       files.push(absolute);
     }
   }
+}
+
+function normalizeMarkdownSource(source: string): string {
+  return source.replace(/\\`/g, "`");
 }
 
 function sliteSnippets(markdown: string): string[] {
