@@ -47,7 +47,7 @@ body:
     id: confusing
     attributes:
       label: What was confusing or hard?
-      description: Mention syntax, docs, errors, examples, install, or IDE workflow if relevant.
+      description: Mention syntax, docs, errors, documentation examples, install, or IDE workflow if relevant.
     validations:
       required: false
   - type: textarea

@@ -1,7 +1,0 @@
-items = [1, 2, 3]
-push(items, 4)
-insert(items, 0, 0)
-remove(items, 2)
-
-foreach item in items:
-    say toText(item)

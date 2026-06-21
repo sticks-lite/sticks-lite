@@ -1,7 +1,0 @@
-person = {"name": "Maya", "age": 13}
-
-say person["name"]
-person["age"] = 14
-person["city"] = "Ridgewood"
-
-say toText(person)

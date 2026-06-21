@@ -1,9 +1,0 @@
-say "Double 5 is " + toText(double(5))
-
-new double(x):
-    return x * 2
-
-new greet:
-    say "Hello from a no-parameter function"
-
-greet()

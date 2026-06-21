@@ -1,6 +1,0 @@
-attempt:
-    x = toNumber("abc")
-when ValueError:
-    say "That is not a number"
-when error:
-    say "Something else went wrong"

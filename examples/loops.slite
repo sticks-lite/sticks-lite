@@ -1,8 +1,0 @@
-count = 3
-
-loopif count > 0:
-    say toText(count)
-    count--
-
-repeat 2 times:
-    say "Done"

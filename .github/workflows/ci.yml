@@ -36,9 +36,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run examples
-        run: npm run test:examples
-
       - name: Run full check
         run: npm run check
 

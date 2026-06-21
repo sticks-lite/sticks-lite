@@ -17,7 +17,7 @@ body:
         - built-in function
         - sticks CLI
         - public TypeScript API
-        - examples
+        - documentation examples
         - documentation
         - error message or hint
         - packaging/install

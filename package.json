@@ -1,6 +1,6 @@
 {
   "name": "sticks-lite",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "The Sticks Lite interpreter and CLI.",
   "keywords": [
     "language",
@@ -30,12 +30,10 @@
     "sticks": "dist/cli/main.js"
   },
   "directories": {
-    "example": "examples",
     "test": "tests"
   },
   "files": [
     "dist",
-    "examples",
     "README.md",
     "LICENSE"
   ],
@@ -43,8 +41,7 @@
     "build": "tsc -p tsconfig.build.json",
     "dev": "npm run build --silent && node dist/cli/main.js",
     "test": "vitest run",
-    "test:examples": "node scripts/run-examples.mjs",
-    "check": "npm test && npm run build && npm run test:examples",
+    "check": "npm test && npm run build",
     "audit:prod": "npm audit --omit=dev",
     "release:check": "npm run check && npm run audit:prod && npm pack --dry-run",
     "prepublishOnly": "npm run check"

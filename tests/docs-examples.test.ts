@@ -8,10 +8,11 @@ const workspaceRoot = path.resolve(process.cwd(), "..");
 
 const runnableDocs = [
   "sticks-lite/README.md",
-  "docs/docs/getting-started.md",
-  "docs/docs/tutorial.md",
-  "docs/docs/examples.md",
-  "docs/docs/standard-library.md"
+  "docs/pages/home.mdx",
+  "docs/docs/getting-started.mdx",
+  "docs/learn/basics.mdx",
+  "docs/learn/classroom-programs.mdx",
+  "docs/reference/standard-library.mdx"
 ];
 
 describe("README and docs examples", () => {
@@ -41,7 +42,7 @@ describe("README and docs examples", () => {
   }
 
   it("documents every built-in in the generated table and in a runnable example", () => {
-    const markdown = fs.readFileSync(path.join(workspaceRoot, "docs/docs/standard-library.md"), "utf8");
+    const markdown = fs.readFileSync(path.join(workspaceRoot, "docs/reference/standard-library.mdx"), "utf8");
     const snippets = sliteSnippets(markdown).join("\n\n");
 
     for (const name of BUILTIN_NAMES) {

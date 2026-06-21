@@ -55,7 +55,7 @@ sticks path/to/project
 The `sticks` CLI accepts either a `.slite` source file or a project directory.
 
 ```sh
-sticks examples/hello.slite
+sticks main.slite
 sticks ./student-project
 ```
 
@@ -165,7 +165,7 @@ npm install
 Run from source:
 
 ```sh
-npm run dev -- examples/hello.slite
+npm run dev -- main.slite
 ```
 
 Build:
@@ -178,13 +178,6 @@ Test:
 
 ```sh
 npm test
-```
-
-Run every executable example:
-
-```sh
-npm run build
-npm run test:examples
 ```
 
 Run all checks:

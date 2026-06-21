@@ -33,7 +33,7 @@ body:
         - lexer/parser
         - interpreter/runtime
         - public TypeScript API
-        - examples
+        - documentation examples
         - documentation
         - packaging/install
         - other
