@@ -8,11 +8,7 @@ const workspaceRoot = path.resolve(process.cwd(), "..");
 
 const runnableDocs = [
   "sticks-lite/README.md",
-  "docs/pages/home.mdx",
-  "docs/docs/getting-started.mdx",
-  "docs/learn/basics.mdx",
-  "docs/learn/classroom-programs.mdx",
-  "docs/reference/standard-library.mdx"
+  ...docsMarkdownFiles()
 ];
 
 describe("README and docs examples", () => {
@@ -21,8 +17,7 @@ describe("README and docs examples", () => {
       const absolutePath = path.join(workspaceRoot, relativePath);
       const markdown = fs.readFileSync(absolutePath, "utf8");
       const snippets = sliteSnippets(markdown);
-
-      expect(snippets.length, relativePath).toBeGreaterThan(0);
+      if (snippets.length === 0) return;
 
       for (const [index, snippet] of snippets.entries()) {
         const output: string[] = [];
@@ -51,6 +46,30 @@ describe("README and docs examples", () => {
     }
   });
 });
+
+function docsMarkdownFiles(): string[] {
+  const docsRoot = path.join(workspaceRoot, "docs");
+  const files: string[] = [];
+  walk(docsRoot, files);
+  return files
+    .map((file) => path.relative(workspaceRoot, file))
+    .filter((file) => !file.includes("node_modules") && !file.includes("dist"))
+    .sort();
+}
+
+function walk(directory: string, files: string[]): void {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git") continue;
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      walk(absolute, files);
+      continue;
+    }
+    if (entry.isFile() && /\.(md|mdx)$/.test(entry.name)) {
+      files.push(absolute);
+    }
+  }
+}
 
 function sliteSnippets(markdown: string): string[] {
   const snippets: string[] = [];
