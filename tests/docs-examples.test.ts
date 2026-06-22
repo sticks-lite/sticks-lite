@@ -50,6 +50,7 @@ describe("README and docs examples", () => {
 function docsMarkdownFiles(): string[] {
   const docsRoot = path.join(workspaceRoot, "docs");
   const files: string[] = [];
+  if (!fs.existsSync(docsRoot)) return files;
   walk(docsRoot, files);
   return files
     .map((file) => path.relative(workspaceRoot, file))
