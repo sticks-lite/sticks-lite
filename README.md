@@ -136,6 +136,33 @@ const result = await runSource('say "Hello, world!"', {
 });
 ```
 
+## Browser Embedding
+
+The public language core is browser-friendly. Import from `sticks-lite`, provide
+`RuntimeIO`, and keep CLI modules out of browser bundles.
+
+```ts
+import { runSource, type RuntimeIO } from "sticks-lite";
+
+const output: string[] = [];
+
+const io: RuntimeIO = {
+  async readInput(prompt) {
+    output.push(`? ${prompt}`);
+    return "Maya";
+  },
+  writeOutput(text) {
+    output.push(text);
+  },
+};
+
+const result = await runSource('name = ask "Name?"\nsay "Hello " + name\n', io);
+```
+
+Node-specific file access and terminal I/O are limited to the `sticks` CLI
+wrapper. The core lexer, parser, interpreter, built-ins, and errors do not use
+Node file-system, process, stream, or readline APIs.
+
 ## Architecture
 
 The language core is platform-independent.

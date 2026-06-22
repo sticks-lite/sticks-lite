@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import {
   SticksLiteError,
   isSticksLiteError,
@@ -8,6 +10,8 @@ import {
   type RunResult,
   type RuntimeIO
 } from "../src";
+
+const coreSourceRoot = path.resolve(__dirname, "../src");
 
 describe("documented public exports", () => {
   it("lex returns positioned tokens", () => {
@@ -76,4 +80,49 @@ describe("documented public exports", () => {
     expect(error.format()).toContain("SyntaxError at line 2, column 8");
     expect(error.format()).toContain("Hint: Did you forget a colon after this block?");
   });
+
+  it("runSource works with browser-style async RuntimeIO", async () => {
+    const events: string[] = [];
+    const answers = ["Maya", "12"];
+
+    const result = await runSource(
+      'name = ask "Name?"\nage = ask "Age?"\nsay name + " is " + age\n',
+      {
+        async readInput(prompt) {
+          events.push(`prompt:${prompt}`);
+          await Promise.resolve();
+          return answers.shift() ?? "";
+        },
+        writeOutput(text) {
+          events.push(`output:${text}`);
+        }
+      }
+    );
+
+    expect(result).toEqual({ ok: true, output: ["Maya is 12"] });
+    expect(events).toEqual(["prompt:Name?", "prompt:Age?", "output:Maya is 12"]);
+  });
+
+  it("keeps Node-specific APIs out of the browser-safe core", () => {
+    const checkedFiles = sourceFiles(coreSourceRoot).filter((file) => !file.includes(`${path.sep}cli${path.sep}`));
+    const forbidden = /\bfrom\s+["']node:|\brequire\s*\(|\bprocess\.|\bBuffer\b|\b__dirname\b|\b__filename\b/;
+
+    for (const file of checkedFiles) {
+      const source = fs.readFileSync(file, "utf8");
+      expect(source, path.relative(coreSourceRoot, file)).not.toMatch(forbidden);
+    }
+  });
 });
+
+function sourceFiles(directory: string): string[] {
+  const files: string[] = [];
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...sourceFiles(absolute));
+    } else if (entry.isFile() && entry.name.endsWith(".ts")) {
+      files.push(absolute);
+    }
+  }
+  return files;
+}
