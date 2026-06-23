@@ -41,13 +41,13 @@ sticks --version
 Run a `.slite` source file:
 
 ```sh
-sticks main.slite
+sticks run main.slite
 ```
 
 Run a directory containing `main.slite`:
 
 ```sh
-sticks path/to/project
+sticks run path/to/project
 ```
 
 ## CLI
@@ -55,8 +55,8 @@ sticks path/to/project
 The `sticks` CLI accepts either a `.slite` source file or a project directory.
 
 ```sh
-sticks main.slite
-sticks ./student-project
+sticks run main.slite
+sticks run ./student-project
 ```
 
 When a directory is provided, Sticks Lite looks for an exactly named entry file:
@@ -67,6 +67,20 @@ main.slite
 
 The exact lowercase filename is required on Windows, macOS, and Linux so
 classroom projects behave the same way everywhere.
+
+Common commands:
+
+```sh
+sticks --help
+sticks --version
+sticks init my-project
+sticks check main.slite
+sticks run main.slite
+```
+
+`sticks check` and `sticks run` default to `main.slite` when no file or folder
+is provided. For compatibility, `sticks main.slite` still runs a program, but
+`sticks run` is the preferred form.
 
 ## Example
 

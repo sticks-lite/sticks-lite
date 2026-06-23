@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { access, readFile, readdir, stat } from "node:fs/promises";
+import { access, mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const ENTRY_FILE = "main.slite";
@@ -26,6 +26,25 @@ export async function readProgram(fileOrDirectory: string): Promise<string> {
   } catch (error) {
     throw readablePathError(filePath, error);
   }
+}
+
+export interface InitProjectResult {
+  directory: string;
+  files: string[];
+}
+
+export async function initProject(projectDirectory: string): Promise<InitProjectResult> {
+  await mkdir(projectDirectory, { recursive: true });
+  const mainPath = path.join(projectDirectory, ENTRY_FILE);
+  const readmePath = path.join(projectDirectory, "README.md");
+
+  await assertCanCreate(mainPath);
+  await assertCanCreate(readmePath);
+
+  await writeFile(mainPath, defaultMainSource(), "utf8");
+  await writeFile(readmePath, projectReadme(projectNameForReadme(projectDirectory)), "utf8");
+
+  return { directory: projectDirectory, files: [mainPath, readmePath] };
 }
 
 export async function resolveProgramPath(fileOrDirectory: string): Promise<string> {
@@ -130,6 +149,19 @@ async function assertReadable(filePath: string): Promise<void> {
   }
 }
 
+async function assertCanCreate(filePath: string): Promise<void> {
+  try {
+    await access(filePath, constants.F_OK);
+  } catch (error) {
+    if (errorCode(error) === "ENOENT") return;
+    throw readablePathError(filePath, error);
+  }
+  throw new CliInputError(
+    `Cannot create \`${filePath}\` because it already exists.`,
+    "Choose a new project folder, or move the existing file before running `sticks init`."
+  );
+}
+
 function missingPathError(filePath: string, error: unknown): CliInputError {
   const code = errorCode(error);
   if (code === "EACCES" || code === "EPERM") {
@@ -152,4 +184,68 @@ function readablePathError(filePath: string, error: unknown): CliInputError {
 
 function errorCode(error: unknown): string | undefined {
   return typeof error === "object" && error !== null && "code" in error ? String((error as { code?: unknown }).code) : undefined;
+}
+
+function projectNameForReadme(projectDirectory: string): string {
+  const name = pathBasenameForDisplay(projectDirectory);
+  return name.length > 0 ? name : "Sticks Lite Project";
+}
+
+function defaultMainSource(): string {
+  return `# Welcome to Sticks Lite.
+# Run this project with:
+# sticks run
+
+DEFINE PASSING_SCORE = 70
+
+name = ask "Name?"
+scoreText = ask "Score?"
+score = toNumber(scoreText)
+
+say "Hello " + name
+
+if score >= PASSING_SCORE:
+    say "Passing"
+otherwise:
+    say "Keep practicing"
+`;
+}
+
+function projectReadme(projectName: string): string {
+  return `# ${projectName}
+
+A small Sticks Lite project for learning programming fundamentals.
+
+## Files
+
+- \`main.slite\` - the program entry file.
+- \`README.md\` - notes for this project.
+
+## Run
+
+From this folder:
+
+\`\`\`sh
+sticks run
+\`\`\`
+
+Or from another folder:
+
+\`\`\`sh
+sticks run path/to/${projectName}
+\`\`\`
+
+## Check
+
+Check the program without running it:
+
+\`\`\`sh
+sticks check
+\`\`\`
+
+## Learn
+
+Try changing the passing score, prompt text, or messages in \`main.slite\`.
+Sticks Lite is intended for monitored educational environments.
+`;
 }

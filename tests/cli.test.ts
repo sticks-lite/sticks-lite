@@ -1,4 +1,4 @@
-import { chmod, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { Readable, Writable } from "node:stream";
@@ -118,6 +118,109 @@ describe("CLI runtime behavior", () => {
     expect(error.text()).toBe("");
   });
 
+  it("prints help for --help", async () => {
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["--help"], input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toContain("Usage:");
+    expect(output.text()).toContain("sticks run [file-or-directory]");
+    expect(output.text()).toContain("sticks check [file-or-directory]");
+    expect(output.text()).toContain("sticks init <project-name>");
+    expect(error.text()).toBe("");
+  });
+
+  it("runs a file through the explicit run command", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "lesson.slite"), "say \"run command\"\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["run", "lesson.slite"], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("run command\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("runs main.slite through the explicit run command by default", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "main.slite"), "say \"default run\"\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["run"], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("default run\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("checks main.slite by default without running it", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "main.slite"), "say \"not printed\"\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["check"], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("No syntax errors found in main.slite.\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("checks a specific file and reports syntax errors", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "broken.slite"), "if True\n    say \"missing colon\"\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["check", "broken.slite"], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(1);
+    expect(output.text()).toBe("");
+    expect(error.text()).toContain("SyntaxError");
+    expect(error.text()).toContain("Hint:");
+  });
+
+  it("initializes a new project folder", async () => {
+    const directory = await makeTempDir();
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["init", "my-project"], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toContain("Created Sticks Lite project in my-project");
+    expect(output.text()).toContain("main.slite");
+    expect(output.text()).toContain("README.md");
+    expect(error.text()).toBe("");
+
+    const main = await readFile(path.join(directory, "my-project", "main.slite"), "utf8");
+    const readme = await readFile(path.join(directory, "my-project", "README.md"), "utf8");
+    expect(main).toContain("DEFINE PASSING_SCORE = 70");
+    expect(readme).toContain("# my-project");
+    expect(readme).toContain("sticks run");
+  });
+
+  it("does not overwrite files during project init", async () => {
+    const directory = await makeTempDir();
+    const project = path.join(directory, "existing");
+    await mkdir(project);
+    await writeFile(path.join(project, "main.slite"), "say \"keep me\"\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["init", "existing"], cwd: directory, input: Readable.from([]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(1);
+    expect(output.text()).toBe("");
+    expect(error.text()).toContain("already exists");
+    await expect(readFile(path.join(project, "main.slite"), "utf8")).resolves.toBe("say \"keep me\"\n");
+  });
+
   it("runs a POSIX-style file path on macOS and Linux", async () => {
     const directory = await makeTempDir();
     const nested = path.join(directory, "lessons");
@@ -156,6 +259,19 @@ describe("CLI runtime behavior", () => {
 
     expect(code).toBe(0);
     expect(output.text()).toBe("Value? Got \nDone\n");
+    expect(error.text()).toBe("");
+  });
+
+  it("handles multiple prompts from piped input in one stream chunk", async () => {
+    const directory = await makeTempDir();
+    await writeFile(path.join(directory, "main.slite"), "name = ask \"Name?\"\nscore = ask \"Score?\"\nsay name + \":\" + score\n", "utf8");
+    const output = captureWritable();
+    const error = captureWritable();
+
+    const code = await runCli({ argv: ["run"], cwd: directory, input: Readable.from(["Maya\n82\n"]), output: output.stream, error: error.stream });
+
+    expect(code).toBe(0);
+    expect(output.text()).toBe("Name? Score? Maya:82\n");
     expect(error.text()).toBe("");
   });
 
