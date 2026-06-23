@@ -3,6 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
 [![npm downloads](https://img.shields.io/npm/dm/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
 [![CI](https://github.com/sticks-lite/sticks-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/sticks-lite/sticks-lite/actions/workflows/ci.yml)
+[![Tests: 156](https://img.shields.io/badge/tests-156%20passing-brightgreen.svg)](#test-summary)
 [![GitHub stars](https://img.shields.io/github/stars/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/forks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -226,6 +227,27 @@ Run all checks:
 ```sh
 npm run check
 ```
+
+## Test Summary
+
+Sticks Lite 1.0.25 has 156 passing tests across 14 Vitest suites.
+
+Use the centralized scripts below for local development and CI:
+
+```sh
+npm run test:all
+npm run test:syntax
+npm run test:builtins
+npm run test:cli
+npm run test:browser
+npm run ci:verify
+npm run release:check
+```
+
+Coverage includes lexer and parser behavior, all syntax families, every
+registered built-in, documented public APIs, browser-safe core execution, CLI
+modes, project initialization, documentation examples, friendly errors, and
+locked language semantics.
 
 ## Responsible Use
 

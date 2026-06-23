@@ -1,6 +1,6 @@
 {
   "name": "sticks-lite",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "The Sticks Lite interpreter and CLI.",
   "keywords": [
     "language",
@@ -40,10 +40,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "npm run build --silent && node dist/cli/main.js",
-    "test": "vitest run",
-    "check": "npm test && npm run build",
+    "test": "npm run test:all",
+    "test:all": "vitest run",
+    "test:syntax": "vitest run tests/syntax-features.test.ts",
+    "test:builtins": "vitest run tests/builtins-all.test.ts",
+    "test:cli": "vitest run tests/cli.test.ts tests/cli-modes.test.ts",
+    "test:browser": "vitest run tests/browser-safe-core.test.ts",
+    "check": "npm run test:all && npm run build",
     "audit:prod": "npm audit --omit=dev",
-    "release:check": "npm run check && npm run audit:prod && npm pack --dry-run",
+    "package:dry-run": "npm pack --dry-run",
+    "ci:verify": "npm run check && npm run audit:prod",
+    "release:check": "npm run ci:verify && npm run package:dry-run",
     "prepublishOnly": "npm run check"
   },
   "devDependencies": {

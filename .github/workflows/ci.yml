@@ -38,14 +38,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
-
-      - name: Build
-        run: npm run build
-
-      - name: Audit production dependencies
-        run: npm audit --omit=dev
+      - name: Verify tests, build, and production audit
+        run: npm run ci:verify
 
   package:
     name: Package dry run
@@ -69,4 +63,4 @@ jobs:
         run: npm run build
 
       - name: Verify npm package contents
-        run: npm pack --dry-run
+        run: npm run package:dry-run
