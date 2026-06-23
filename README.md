@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
 [![npm downloads](https://img.shields.io/npm/dm/sticks-lite.svg)](https://www.npmjs.com/package/sticks-lite)
 [![CI](https://github.com/sticks-lite/sticks-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/sticks-lite/sticks-lite/actions/workflows/ci.yml)
-[![Tests: 156](https://img.shields.io/badge/tests-156%20passing-brightgreen.svg)](#test-summary)
+[![Tests: 157](https://img.shields.io/badge/tests-157%20passing-brightgreen.svg)](#test-summary)
 [![GitHub stars](https://img.shields.io/github/stars/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sticks-lite/sticks-lite?style=flat)](https://github.com/sticks-lite/sticks-lite/forks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -230,7 +230,7 @@ npm run check
 
 ## Test Summary
 
-Sticks Lite 1.0.25 has 156 passing tests across 14 Vitest suites.
+The current Sticks Lite release has 157 passing tests across 14 Vitest suites.
 
 Use the centralized scripts below for local development and CI:
 
