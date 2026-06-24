@@ -55,7 +55,7 @@ body:
       label: Steps to reproduce
       placeholder: |
         1. Create main.slite with the source above.
-        2. Run `sticks main.slite`.
+        2. Run `sticks run main.slite`.
         3. See the error.
     validations:
       required: true

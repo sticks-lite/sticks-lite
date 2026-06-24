@@ -9,81 +9,87 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Sticks Lite is a small educational programming language for monitored
-classroom environments. It is designed to teach introductory computer-science
-concepts with readable syntax, indentation-based blocks, friendly errors, and a
-compact TypeScript interpreter.
+classroom environments. It teaches introductory programming with readable
+syntax, indentation-based blocks, friendly errors, and a compact TypeScript
+interpreter.
 
-This repository contains the language core, interpreter, and `sticks` CLI.
+This repository contains the language core, interpreter, public TypeScript API,
+and `sticks` CLI.
 
-## Who this is for
+## Quick Links
+
+| Resource | Purpose |
+| --- | --- |
+| [Documentation](https://github.com/sticks-lite/docs) | Guided learning, reference pages, tools, and classroom guidance. |
+| [CLI Reference](https://github.com/sticks-lite/docs/blob/main/src/reference/cli.md) | `sticks run`, `sticks check`, `sticks init`, `--help`, and `--version`. |
+| [TypeScript API](https://github.com/sticks-lite/docs/blob/main/src/reference/typescript-api.md) | `lex`, `parse`, `runSource`, `RuntimeIO`, `RunResult`, and `SticksLiteError`. |
+| [Browser Embedding](https://github.com/sticks-lite/docs/blob/main/src/tools/browser.md) | Running Sticks Lite in browser-like environments. |
+| [Responsible Use](https://github.com/sticks-lite/docs/blob/main/src/classroom/responsible-use.md) | Classroom safety and supervision guidance. |
+| [Changelog](CHANGELOG.md) | Public release history. |
+| [Contributing](CONTRIBUTING.md) | Development workflow and contribution expectations. |
+| [Release Checklist](RELEASE.md) | Formal release verification steps. |
+| [Security Policy](SECURITY.md) | Vulnerability reporting and security model. |
+| [Support](SUPPORT.md) | Community support expectations. |
+
+## Who This Is For
 
 - Teachers and mentors introducing programming in a supervised classroom.
-- Students learning variables, conditionals, loops, functions, collections, and errors.
-- Clubs, camps, and beginner computer-science lessons that need a small `.slite`
-  language and the `sticks` CLI.
+- Students learning variables, conditionals, loops, functions, collections, and
+  errors.
+- Clubs, camps, and beginner computer-science lessons that need a small
+  `.slite` language and the `sticks` CLI.
 
-Sticks Lite is intentionally small. It is not intended for production software
-or unsupervised execution of untrusted source files.
+Sticks Lite is intentionally small. It is not intended for production apps,
+security sandboxing, unsupervised execution of untrusted source files, or
+safety-critical work.
 
 ## Install
 
-Install globally from npm:
+Install the CLI globally from npm:
 
 ```sh
 npm install -g sticks-lite
 ```
 
-Check the installed CLI:
+Verify the install:
 
 ```sh
 sticks --version
-```
-
-Run a `.slite` source file:
-
-```sh
-sticks run main.slite
-```
-
-Run a directory containing `main.slite`:
-
-```sh
-sticks run path/to/project
-```
-
-## CLI
-
-The `sticks` CLI accepts either a `.slite` source file or a project directory.
-
-```sh
-sticks run main.slite
-sticks run ./student-project
-```
-
-When a directory is provided, Sticks Lite looks for an exactly named entry file:
-
-```txt
-main.slite
-```
-
-The exact lowercase filename is required on Windows, macOS, and Linux so
-classroom projects behave the same way everywhere.
-
-Common commands:
-
-```sh
 sticks --help
-sticks --version
-sticks init my-project
-sticks check main.slite
-sticks run main.slite
 ```
 
-`sticks check` and `sticks run` default to `main.slite` when no file or folder
-is provided. For compatibility, `sticks main.slite` still runs a program, but
-`sticks run` is the preferred form.
+Create and run a starter project:
 
-## Example
+```sh
+sticks init hello-sticks
+cd hello-sticks
+sticks check
+sticks run
+```
+
+The starter program asks for a name and score.
+
+## CLI Commands
+
+| Command | What it does |
+| --- | --- |
+| `sticks --help` | Show CLI help. |
+| `sticks --version` | Print the installed package version. |
+| `sticks init my-project` | Create `main.slite` and `README.md` in a new project folder. |
+| `sticks check` | Check `main.slite` without running it. |
+| `sticks check file.slite` | Check a specific source file. |
+| `sticks run` | Run `main.slite` in the current folder. |
+| `sticks run file.slite` | Run a specific source file. |
+| `sticks run ./project` | Run `main.slite` inside a project folder. |
+
+For compatibility, `sticks file.slite` still runs a program, but `sticks run`
+is the preferred command.
+
+When a directory is provided, Sticks Lite looks for an exactly named
+`main.slite` entry file. The lowercase filename is required on Windows, macOS,
+and Linux so classroom projects behave consistently.
+
+## Example Program
 
 ```slite
 DEFINE MAX_SCORE = 100
@@ -103,7 +109,7 @@ new double(value):
 say toText(double(MAX_SCORE))
 ```
 
-## Language Features
+## Language At A Glance
 
 - `.slite` source files.
 - One statement per line.
@@ -117,22 +123,23 @@ say toText(double(MAX_SCORE))
 - `attempt` and `when` for beginner-friendly error handling.
 - Built-ins for conversion, type checks, collection operations, and math.
 - Friendly `SticksLiteError` messages with line, column, and optional hints.
-- Comment and math behavior is covered by stability tests for future releases.
 
-## Public API
+## Public TypeScript API
 
 ```ts
 import { lex, parse, runSource } from "sticks-lite";
 ```
 
-Exports include:
+Documented exports include:
 
-- `lex(source: string)`
-- `parse(source: string)`
-- `runSource(source: string, io?)`
-- `RuntimeIO`
-- `RunResult`
-- `SticksLiteError`
+| Export | Purpose |
+| --- | --- |
+| `lex(source)` | Convert source text into positioned tokens. |
+| `parse(source)` | Convert source text into a `Program` AST. |
+| `runSource(source, io?)` | Parse and execute source text. |
+| `RuntimeIO` | Connect `ask` and `say` to a host environment. |
+| `RunResult` | Structured success or failure result from `runSource`. |
+| `SticksLiteError` | Friendly error with name, message, line, column, and optional hint. |
 
 Example:
 
@@ -142,7 +149,7 @@ import { runSource } from "sticks-lite";
 const output: string[] = [];
 
 const result = await runSource('say "Hello, world!"', {
-  readInput(prompt) {
+  readInput() {
     return "";
   },
   writeOutput(text) {
@@ -178,23 +185,30 @@ Node-specific file access and terminal I/O are limited to the `sticks` CLI
 wrapper. The core lexer, parser, interpreter, built-ins, and errors do not use
 Node file-system, process, stream, or readline APIs.
 
-## Architecture
-
-The language core is platform-independent.
+## Repository Structure
 
 ```txt
-source file text
+src/             TypeScript source for lexer, parser, runtime, and CLI
+tests/           Vitest suites and test-suite map
+.github/         CI workflow and issue templates
+CHANGELOG.md     Public release history
+CONTRIBUTING.md  Contributor guide
+RELEASE.md       Formal release checklist
+SECURITY.md      Security policy
+SUPPORT.md       Support policy
+```
+
+The language core is platform-independent:
+
+```txt
+source text
 lexer
 parser
 AST
 function pre-scan
 interpreter
-runtime I/O
+RuntimeIO
 ```
-
-Node.js file access, terminal input, and terminal output live in the CLI
-wrapper. The interpreter itself communicates through `RuntimeIO`, which keeps
-the core usable from the CLI, browser IDE, tests, and future classroom tools.
 
 ## Development
 
@@ -207,7 +221,7 @@ npm install
 Run from source:
 
 ```sh
-npm run dev -- main.slite
+npm run dev -- run main.slite
 ```
 
 Build:
@@ -222,17 +236,23 @@ Test:
 npm test
 ```
 
-Run all checks:
+Run the package verification command:
 
 ```sh
-npm run check
+npm run ci:verify
+```
+
+Run the formal package release check:
+
+```sh
+npm run release:check
 ```
 
 ## Test Summary
 
 The current Sticks Lite release has 157 passing tests across 14 Vitest suites.
 
-Use the centralized scripts below for local development and CI:
+Focused commands:
 
 ```sh
 npm run test:all
@@ -240,8 +260,6 @@ npm run test:syntax
 npm run test:builtins
 npm run test:cli
 npm run test:browser
-npm run ci:verify
-npm run release:check
 ```
 
 Coverage includes lexer and parser behavior, all syntax families, every
@@ -249,15 +267,21 @@ registered built-in, documented public APIs, browser-safe core execution, CLI
 modes, project initialization, documentation examples, friendly errors, and
 locked language semantics.
 
+## Package Contents
+
+The npm package is intentionally small. `npm pack --dry-run` should show only:
+
+- `dist/`
+- `README.md`
+- `LICENSE`
+- `package.json`
+
+Source, tests, CI configuration, and release notes stay in the repository.
+
 ## Responsible Use
 
 Use Sticks Lite in supervised learning settings. A teacher, mentor, or parent
 should review what students run and decide whether each lesson is appropriate.
-
-Sticks Lite is not for production apps, security sandboxing, unsupervised
-execution of untrusted source files, or safety-critical work.
-
-## Security Model
 
 Sticks Lite keeps the interpreter small and explicit, but it is not a sandbox.
 
@@ -265,8 +289,6 @@ Sticks Lite keeps the interpreter small and explicit, but it is not a sandbox.
 - The CLI wrapper reads `.slite` source files and handles terminal I/O.
 - Built-in names, error names, constants, and functions are protected from
   accidental overwrite.
-- Core collection, function, constant, and protected-name semantics are covered
-  by regression tests before feature releases.
 - Friendly errors are intended for learning and debugging, not security
   enforcement.
 - Do not run untrusted programs without external controls and supervision.
